@@ -1,182 +1,127 @@
-# Substrate Node popi
+License: MIT-0
 
-A fresh [Substrate](https://substrate.io/) node, ready for hacking :rocket:
+ # POPI Pallet
 
-A standalone version of this popi is available for each release of Polkadot in the [Substrate Developer Hub Parachain popi](https://github.com/substrate-developer-hub/substrate-parachain-popi/) repository.
-The parachain popi is generated directly at each Polkadot release branch from the [Node popi in Substrate](https://github.com/paritytech/substrate/tree/master/bin/node-popi) upstream
+ Proof of positive interaction. A collectivity that contributes to build something.
+ There are different kind of things that may be built, each thing will go through
+ a set of lavoration steps. A lavoration step is registered onchain through an interaction.
+ The interaction is another user that verifies positively that your work contributed to move
+ a thing from the lavoration step n to the n+1.
 
-It is usually best to use the standalone version to start a new project.
-All bugs, suggestions, and feature requests should be made upstream in the [Substrate](https://github.com/paritytech/substrate/tree/master/bin/node-popi) repository.
+ Yeah I know you didn't understand what I'm talking about. Lets make a concrete example:
+ a software company, may be an ecommerce software company, the website is built following a
+ kanban or scrum agile process. Think at the board typical columns:
 
-## Getting Started
+ NEW	 | TODO | IN PROGRESS | CODE REVIEW | QA | READY TO DEPLOY | DEPLOYED | QA PRODUCTION | DONE
+        Task1
+ Task2
+                              Task3
+ ....
 
-Depending on your operating system and Rust version, there might be additional packages required to compile this popi.
-Check the [installation](https://docs.substrate.io/install/) instructions for your platform for the most common dependencies.
-Alternatively, you can use one of the [alternative installation](#alternative-installations) options.
+ We have tasks, task can be of 3 different kinds:
+ 1. UI = design the UI of a functionality
+ 2. FRONTEND DEVELOP = i.e. coding in React.js
+ 3. SERVER DEVELOP = i.e. implementing an API service consumed by the frontend
+ 4. BI = someone who analyses the user journey
+ 5. QA = Someone who validates something built
+ 6. PO = creator of tasks.
+ 7. PM = project manager
 
-### Build
+ Every task must follow all the steps from NEW to DONE. The progress can never be done by the
+ same person who worked on this specific task in this specific column.
 
-Use the following command to build the node without launching it:
+ Lets make an example:
+ Task: change a color of a text "Click here to signin" from RED To Yellow.
 
-```sh
-cargo build --release
-```
+ This task is created by UI. The task goes inmediately to the NEW column.
+ PO moves this to TODO.
 
-### Embedded Docs
+ A developer PULLS this task, means: moves this task from TODO into IN PROGRESS>
+ Once she is done, set the task into "COMPLETED the current step". So small detail:
+ yes, someone else must move the task, but the person in this step must say "MY WORK IS READY TO
+ BE PULLED" So the board is simplified but actually it has the double of steps:
+ NEW| READY TO BE PULLED TO TODO | TODO| READY FOR INPROGRESS | INPROGRESS | READY FOR REVIEW |
+ REVIEW |
 
-After you build the project, you can use the following command to explore its parameters and subcommands:
+ three cases connected to the previous example:
+ 1. UI creates the task, this task must be well described, contain the color code corresponding
+    to
+ Yellow. When she thinks the task is ready to be pulled by A PO, set the task as "READY TO BE
+ PULLED"
 
-```sh
-./target/release/node-popi -h
-```
+ 2. When a frontend developer takes a task from TODO to INPROGRESS. works on it, once she thinks
+    everything is
+ completed and perhaps created a code review, sets this task as ready to be pulled
 
-You can generate and view the [Rust Docs](https://doc.rust-lang.org/cargo/commands/cargo-doc.html) for this popi with this command:
+ 3. another developer will see the task as ready to be pulled and move it to Code review,
+ and so on.
 
-```sh
-cargo +nightly doc --open
-```
+ This Pallet is about the experience a person earns for working on something. We tried to figure
+ out the must fair way to earn experience, thinking also on how to resist to attacks by
+ introducing a few constraints:
 
-### Single-Node Development Chain
+ I already mentioned the first constraint, the most important: we work on a specific phase of a
+ task, set this as ready, but only another person may pull this task. Not anyone is capable of
+ pulling a task, but depending of the column, only an expert on that role may pull that task.
+ What makes you expert on something? We're talking about roles, roles are not preset. Like a QA
+ says " I am QA" or a root whitelist the user as QA. Tha'ts not what we want. Any person may work
+ on any kind of task, once someone else approves your task, we're setting a milestone. Someone is
+ saying "this person did a good job for this specific task in this specific phase". I'm setting a
+ STAMP. This stamp, makes the person which work on this task earn some experience points.
 
-The following command starts a single-node development chain that doesn't persist state:
+ That will be our ranking, and considering we may work on different kind of tasks, and our stamps
+ are given by different roles, we want to have a good granurality level keeping track of all
+ those aspects in a multidimensional matrix:
 
-```sh
-./target/release/node-popi --dev
-```
+  person given stamps by role | role1 | role 2 | role 3 | role 4
+ worked on kind of task:
+ kind 1
+ kind 2
+ kind 3
+ kind 4
 
-To purge the development chain's state, run the following command:
+ so for example, think on someone who is a bit QA, a bit developer.
 
-```sh
-./target/release/node-popi purge-chain --dev
-```
+ Alice worked on two tasks:
+ 1. as deveopler signup text color, changing from yellow to green.
+ 2. QA of a shopping cart functionality.
 
-To start the development chain with detailed logging, run the following command:
+ Alice work on task 1, pull the task from TODO to INPROGRESS, once done set the task as ready for
+ review. A frontend expert pulls the task and move it to "Code review", finally approves that
+ task. Alice  work on task 2, pulling a task from CODE REVIEW DONE to QA, once done set QA to "QA
+ DONE"
 
-```sh
-RUST_BACKTRACE=1 ./target/release/node-popi -ldebug --dev
-```
+ Many roles are involved in this process:
+ a. Task 1 pulled from TODO, was set as ready by a PO. Once Alice pulls it, is creating a proof
+ of positive interaction to the PO. Actually thinking on it, the proof is given just once Alice
+ finalize her task, and set it as READY to be pulled. cause the task creatd by the PO could have
+ low quality, not contain all the info needed and Alice never being able to finalize it. The next
+ role will make this point clearer: b. she sets the task as READY to be reviewed, cretes a code
+ review.A developer pulls it by movindg the task to CODE REVIEW, and the task could be low
+ quality, or not meet the espectations of the task. Only when the task will have an approved code
+ review, so the actual code review approval, will register a proof of positive interaction to
+ ALICE. c. once the code review is set as READY to be pulled, a QA will pull this task, work on
+ it, once the QA is ready, will set as QA done. Again, setting a positive proof of interaction
+ with the developer. d. a QA ready task, could be pulled perhaps by a PO(Product owner) or even
+ by a developer and moved to "READY TO BE RELEASED" e. when the task is deployed by a release
+ engineer or a developer, or a devops, this will increase the ranking of the PO.
 
-Development chains:
+ I hope now it is clear when I say that a person don't decides her role. Her role is an
+ experience depending on positive proof of interactiosn with other experts. Of course initially
+ in the project there will be no experts. Perhaps a ROOT could define initial roles, but I like
+ more the idea of initially every person has 0 as experience, and is allowed to approve
+ everything. We could define a formula that takes the norm of the experience on each role and
+ sets this as a minimum for approving a task. In this way the experience needed to approve will
+ be variable and grow with the overall experience of the community.
 
-- Maintain state in a `tmp` folder while the node is running.
-- Use the **Alice** and **Bob** accounts as default validator authorities.
-- Use the **Alice** account as the default `sudo` account.
-- Are preconfigured with a genesis state (`/node/src/chain_spec.rs`) that includes several prefunded development accounts.
+ Root(which could be for a specific project the PO), defines for a project two sets of values:
+ 1. kind of work(or in the board example, kind of tasks, for example a coding task,
+ 2. steps needed for a any work to be considered it DONE. In the board example, the columns of
+    the board.
+ 3. The roles allowed to set a proof of positive interaction on some specific steps.
+ For example in our board example, only a PO is allowed to move a task from NEW to TO DO
+ Only a developer is allowed to allowed to pull and approve a code review. Or only a developer is
+ allowed to deploy the task.
 
-To persist chain state between runs, specify a base path by running a command similar to the following:
-
-```sh
-// Create a folder to use as the db base path
-$ mkdir my-chain-state
-
-// Use of that folder to store the chain state
-$ ./target/release/node-popi --dev --base-path ./my-chain-state/
-
-// Check the folder structure created inside the base path after running the chain
-$ ls ./my-chain-state
-chains
-$ ls ./my-chain-state/chains/
-dev
-$ ls ./my-chain-state/chains/dev
-db keystore network
-```
-
-### Connect with Polkadot-JS Apps Front-End
-
-After you start the node popi locally, you can interact with it using the hosted version of the [Polkadot/Substrate Portal](https://polkadot.js.org/apps/#/explorer?rpc=ws://localhost:9944) front-end by connecting to the local node endpoint.
-A hosted version is also available on [IPFS (redirect) here](https://dotapps.io/) or [IPNS (direct) here](ipns://dotapps.io/?rpc=ws%3A%2F%2F127.0.0.1%3A9944#/explorer).
-You can also find the source code and instructions for hosting your own instance on the [polkadot-js/apps](https://github.com/polkadot-js/apps) repository.
-
-### Multi-Node Local Testnet
-
-If you want to see the multi-node consensus algorithm in action, see [Simulate a network](https://docs.substrate.io/tutorials/get-started/simulate-network/).
-
-## popi Structure
-
-A Substrate project such as this consists of a number of components that are spread across a few directories.
-
-### Node
-
-A blockchain node is an application that allows users to participate in a blockchain network.
-Substrate-based blockchain nodes expose a number of capabilities:
-
-- Networking: Substrate nodes use the [`libp2p`](https://libp2p.io/) networking stack to allow the
-  nodes in the network to communicate with one another.
-- Consensus: Blockchains must have a way to come to [consensus](https://docs.substrate.io/fundamentals/consensus/) on the state of the network.
-  Substrate makes it possible to supply custom consensus engines and also ships with several consensus mechanisms that have been built on top of [Web3 Foundation research](https://research.web3.foundation/en/latest/polkadot/NPoS/index.html).
-- RPC Server: A remote procedure call (RPC) server is used to interact with Substrate nodes.
-
-There are several files in the `node` directory.
-Take special note of the following:
-
-- [`chain_spec.rs`](./node/src/chain_spec.rs): A [chain specification](https://docs.substrate.io/build/chain-spec/) is a source code file that defines a Substrate chain's initial (genesis) state.
-  Chain specifications are useful for development and testing, and critical when architecting the launch of a production chain.
-  Take note of the `development_config` and `testnet_genesis` functions.
-  These functions are used to define the genesis state for the local development chain configuration.
-  These functions identify some [well-known accounts](https://docs.substrate.io/reference/command-line-tools/subkey/) and use them to configure the blockchain's initial state.
-- [`service.rs`](./node/src/service.rs): This file defines the node implementation.
-  Take note of the libraries that this file imports and the names of the functions it invokes.
-  In particular, there are references to consensus-related topics, such as the [block finalization and forks](https://docs.substrate.io/fundamentals/consensus/#finalization-and-forks) and other [consensus mechanisms](https://docs.substrate.io/fundamentals/consensus/#default-consensus-models) such as Aura for block authoring and GRANDPA for finality.
-
-### Runtime
-
-In Substrate, the terms "runtime" and "state transition function" are analogous.
-Both terms refer to the core logic of the blockchain that is responsible for validating blocks and executing the state changes they define.
-The Substrate project in this repository uses [FRAME](https://docs.substrate.io/fundamentals/runtime-development/#frame) to construct a blockchain runtime.
-FRAME allows runtime developers to declare domain-specific logic in modules called "pallets".
-At the heart of FRAME is a helpful [macro language](https://docs.substrate.io/reference/frame-macros/) that makes it easy to create pallets and flexibly compose them to create blockchains that can address [a variety of needs](https://substrate.io/ecosystem/projects/).
-
-Review the [FRAME runtime implementation](./runtime/src/lib.rs) included in this popi and note the following:
-
-- This file configures several pallets to include in the runtime.
-  Each pallet configuration is defined by a code block that begins with `impl $PALLET_NAME::Config for Runtime`.
-- The pallets are composed into a single runtime by way of the [`construct_runtime!`](https://crates.parity.io/frame_support/macro.construct_runtime.html) macro, which is part of the core FRAME Support [system](https://docs.substrate.io/reference/frame-pallets/#system-pallets) library.
-
-### Pallets
-
-The runtime in this project is constructed using many FRAME pallets that ship with the [core Substrate repository](https://github.com/paritytech/substrate/tree/master/frame) and a popi pallet that is [defined in the `pallets`](./pallets/popi/src/lib.rs) directory.
-
-A FRAME pallet is compromised of a number of blockchain primitives:
-
-- Storage: FRAME defines a rich set of powerful [storage abstractions](https://docs.substrate.io/build/runtime-storage/) that makes it easy to use Substrate's efficient key-value database to manage the evolving state of a blockchain.
-- Dispatchables: FRAME pallets define special types of functions that can be invoked (dispatched) from outside of the runtime in order to update its state.
-- Events: Substrate uses [events and errors](https://docs.substrate.io/build/events-and-errors/) to notify users of important changes in the runtime.
-- Errors: When a dispatchable fails, it returns an error.
-- Config: The `Config` configuration interface is used to define the types and parameters upon which a FRAME pallet depends.
-
-## Alternative Installations
-
-Instead of installing dependencies and building this source directly, consider the following alternatives.
-
-### CI
-
-#### Binary
-
-Check the [CI release workflow](./.github/workflows/release.yml) to see how the binary is built on CI.
-You can modify the compilation targets depending on your needs.
-
-Allow GitHub actions in your forked repository to build the binary for you.
-
-Push a tag. For example, `v0.1.1`. Based on [Semantic Versioning](https://semver.org/), the supported tag format is `v?MAJOR.MINOR.PATCH(-PRERELEASE)?(+BUILD_METADATA)?` (the leading "v", pre-release version, and build metadata are optional and the optional prefix is also supported).
-
-After the pipeline is finished, you can download the binary from the releases page.
-
-#### Container
-
-Check the [CI release workflow](./.github/workflows/release.yml) to see how the Docker image is built on CI.
-
-Add your `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` secrets or other organization settings to your forked repository.
-Change the `DOCKER_REPO` variable in the workflow to `[your DockerHub registry name]/[image name]`.
-
-Push a tag.
-
-After the image is built and pushed, you can pull it with `docker pull <DOCKER_REPO>:<tag>`.
-
-### Nix
-
-Install [nix](https://nixos.org/), and optionally [direnv](https://github.com/direnv/direnv) and [lorri](https://github.com/nix-community/lorri) for a fully plug-and-play experience for setting up the development environment.
-To get all the correct dependencies, activate direnv `direnv allow` and lorri `lorri shell`.
-
-### Docker
-
-Please follow the [Substrate Docker instructions here](https://github.com/paritytech/substrate/blob/master/docker/README.md) to build the Docker container with the Substrate Node popi binary.
+ As I said before, what defines the a person to be a developer, is based on her experience, that
+ must be higher than the norm of all accounts in that specific role
