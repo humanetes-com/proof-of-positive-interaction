@@ -1,16 +1,16 @@
-# Substrate Node Template
+# Substrate Node popi
 
 A fresh [Substrate](https://substrate.io/) node, ready for hacking :rocket:
 
-A standalone version of this template is available for each release of Polkadot in the [Substrate Developer Hub Parachain Template](https://github.com/substrate-developer-hub/substrate-parachain-template/) repository.
-The parachain template is generated directly at each Polkadot release branch from the [Node Template in Substrate](https://github.com/paritytech/substrate/tree/master/bin/node-template) upstream
+A standalone version of this popi is available for each release of Polkadot in the [Substrate Developer Hub Parachain popi](https://github.com/substrate-developer-hub/substrate-parachain-popi/) repository.
+The parachain popi is generated directly at each Polkadot release branch from the [Node popi in Substrate](https://github.com/paritytech/substrate/tree/master/bin/node-popi) upstream
 
 It is usually best to use the standalone version to start a new project.
-All bugs, suggestions, and feature requests should be made upstream in the [Substrate](https://github.com/paritytech/substrate/tree/master/bin/node-template) repository.
+All bugs, suggestions, and feature requests should be made upstream in the [Substrate](https://github.com/paritytech/substrate/tree/master/bin/node-popi) repository.
 
 ## Getting Started
 
-Depending on your operating system and Rust version, there might be additional packages required to compile this template.
+Depending on your operating system and Rust version, there might be additional packages required to compile this popi.
 Check the [installation](https://docs.substrate.io/install/) instructions for your platform for the most common dependencies.
 Alternatively, you can use one of the [alternative installation](#alternative-installations) options.
 
@@ -27,10 +27,10 @@ cargo build --release
 After you build the project, you can use the following command to explore its parameters and subcommands:
 
 ```sh
-./target/release/node-template -h
+./target/release/node-popi -h
 ```
 
-You can generate and view the [Rust Docs](https://doc.rust-lang.org/cargo/commands/cargo-doc.html) for this template with this command:
+You can generate and view the [Rust Docs](https://doc.rust-lang.org/cargo/commands/cargo-doc.html) for this popi with this command:
 
 ```sh
 cargo +nightly doc --open
@@ -41,19 +41,19 @@ cargo +nightly doc --open
 The following command starts a single-node development chain that doesn't persist state:
 
 ```sh
-./target/release/node-template --dev
+./target/release/node-popi --dev
 ```
 
 To purge the development chain's state, run the following command:
 
 ```sh
-./target/release/node-template purge-chain --dev
+./target/release/node-popi purge-chain --dev
 ```
 
 To start the development chain with detailed logging, run the following command:
 
 ```sh
-RUST_BACKTRACE=1 ./target/release/node-template -ldebug --dev
+RUST_BACKTRACE=1 ./target/release/node-popi -ldebug --dev
 ```
 
 Development chains:
@@ -70,7 +70,7 @@ To persist chain state between runs, specify a base path by running a command si
 $ mkdir my-chain-state
 
 // Use of that folder to store the chain state
-$ ./target/release/node-template --dev --base-path ./my-chain-state/
+$ ./target/release/node-popi --dev --base-path ./my-chain-state/
 
 // Check the folder structure created inside the base path after running the chain
 $ ls ./my-chain-state
@@ -83,7 +83,7 @@ db keystore network
 
 ### Connect with Polkadot-JS Apps Front-End
 
-After you start the node template locally, you can interact with it using the hosted version of the [Polkadot/Substrate Portal](https://polkadot.js.org/apps/#/explorer?rpc=ws://localhost:9944) front-end by connecting to the local node endpoint.
+After you start the node popi locally, you can interact with it using the hosted version of the [Polkadot/Substrate Portal](https://polkadot.js.org/apps/#/explorer?rpc=ws://localhost:9944) front-end by connecting to the local node endpoint.
 A hosted version is also available on [IPFS (redirect) here](https://dotapps.io/) or [IPNS (direct) here](ipns://dotapps.io/?rpc=ws%3A%2F%2F127.0.0.1%3A9944#/explorer).
 You can also find the source code and instructions for hosting your own instance on the [polkadot-js/apps](https://github.com/polkadot-js/apps) repository.
 
@@ -91,7 +91,7 @@ You can also find the source code and instructions for hosting your own instance
 
 If you want to see the multi-node consensus algorithm in action, see [Simulate a network](https://docs.substrate.io/tutorials/get-started/simulate-network/).
 
-## Template Structure
+## popi Structure
 
 A Substrate project such as this consists of a number of components that are spread across a few directories.
 
@@ -126,7 +126,7 @@ The Substrate project in this repository uses [FRAME](https://docs.substrate.io/
 FRAME allows runtime developers to declare domain-specific logic in modules called "pallets".
 At the heart of FRAME is a helpful [macro language](https://docs.substrate.io/reference/frame-macros/) that makes it easy to create pallets and flexibly compose them to create blockchains that can address [a variety of needs](https://substrate.io/ecosystem/projects/).
 
-Review the [FRAME runtime implementation](./runtime/src/lib.rs) included in this template and note the following:
+Review the [FRAME runtime implementation](./runtime/src/lib.rs) included in this popi and note the following:
 
 - This file configures several pallets to include in the runtime.
   Each pallet configuration is defined by a code block that begins with `impl $PALLET_NAME::Config for Runtime`.
@@ -134,7 +134,7 @@ Review the [FRAME runtime implementation](./runtime/src/lib.rs) included in this
 
 ### Pallets
 
-The runtime in this project is constructed using many FRAME pallets that ship with the [core Substrate repository](https://github.com/paritytech/substrate/tree/master/frame) and a template pallet that is [defined in the `pallets`](./pallets/template/src/lib.rs) directory.
+The runtime in this project is constructed using many FRAME pallets that ship with the [core Substrate repository](https://github.com/paritytech/substrate/tree/master/frame) and a popi pallet that is [defined in the `pallets`](./pallets/popi/src/lib.rs) directory.
 
 A FRAME pallet is compromised of a number of blockchain primitives:
 
@@ -179,4 +179,4 @@ To get all the correct dependencies, activate direnv `direnv allow` and lorri `l
 
 ### Docker
 
-Please follow the [Substrate Docker instructions here](https://github.com/paritytech/substrate/blob/master/docker/README.md) to build the Docker container with the Substrate Node Template binary.
+Please follow the [Substrate Docker instructions here](https://github.com/paritytech/substrate/blob/master/docker/README.md) to build the Docker container with the Substrate Node popi binary.
