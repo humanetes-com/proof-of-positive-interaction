@@ -2,15 +2,14 @@ License: MIT-0
 
  # POPI Pallet
 
- Proof of positive interaction. A collectivity that contributes to build something.
+ Proof of positive interaction. A collectivity that contributes toward a common goal.
  There are different kind of things that may be built, each thing will go through
- a set of lavoration steps. A lavoration step is registered onchain through an interaction.
- The interaction is another user that verifies positively that your work contributed to move
- a thing from the lavoration step n to the n+1.
+ a set of lavoration steps, or to better call, interactions, registered on chain, as a proof of an increment that happened off-chain. This is in simple terms another user that verifies positively that your work contributed to move
+ a product from the lavoration step n to the n+1.
 
- Yeah I know you didn't understand what I'm talking about. Lets make a concrete example:
- a software company, may be an ecommerce software company, the website is built following a
- kanban or scrum agile process. Think at the board typical columns:
+Lets make a concrete example:
+ a software company that is building an ecommerce website. They are following a
+ kanban or scrum agile process reflected in a typical board with those columns:
 
  NEW	 | TODO | IN PROGRESS | CODE REVIEW | QA | READY TO DEPLOY | DEPLOYED | QA PRODUCTION | DONE
         Task1
@@ -60,11 +59,13 @@ License: MIT-0
  out the must fair way to earn experience, thinking also on how to resist to attacks by
  introducing a few constraints:
 
- I already mentioned the first constraint, the most important: we work on a specific phase of a
- task, set this as ready, but only another person may pull this task. Not anyone is capable of
- pulling a task, but depending of the column, only an expert on that role may pull that task.
+ I already mentioned the first set of constraints that takes place every time we work on a specific phase of a
+ task(or column) and set this as ready:
+ 1. we may not move it to the next column: only another person may pull this task. 
+ 2. Not anyone is capable of pulling a task, but depending of the column, only an expert on that role may pull that task.
+
  What makes you expert on something? We're talking about roles, roles are not preset. Like a QA
- says " I am QA" or a root whitelist the user as QA. Tha'ts not what we want. Any person may work
+ says " I am QA" or a root whitelist the user as QA. That's not what we want. Any person may work
  on any kind of task, once someone else approves your task, we're setting a milestone. Someone is
  saying "this person did a good job for this specific task in this specific phase". I'm setting a
  STAMP. This stamp, makes the person which work on this task earn some experience points.
@@ -106,7 +107,7 @@ License: MIT-0
  by a developer and moved to "READY TO BE RELEASED" e. when the task is deployed by a release
  engineer or a developer, or a devops, this will increase the ranking of the PO.
 
- I hope now it is clear when I say that a person don't decides her role. Her role is an
+ I hope now it is clear when I say that a person doesn't decides her role. Her role is an
  experience depending on positive proof of interactiosn with other experts. Of course initially
  in the project there will be no experts. Perhaps a ROOT could define initial roles, but I like
  more the idea of initially every person has 0 as experience, and is allowed to approve
