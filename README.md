@@ -2,8 +2,8 @@ License: MIT-0
 
  # POPI Pallet
 
- Proof of positive interaction. A collectivity that contributes to build something.
- There are different kind of things that may be built, each thing will go through
+ Proof of positive interaction. A collectivity that contributes toward a common goal.
+ There are different kind of products that may be built, each will go through
  a set of lavoration steps. A lavoration step is registered onchain through an interaction.
  The interaction is another user that verifies positively that your work contributed to move
  a thing from the lavoration step n to the n+1.
