@@ -8,8 +8,9 @@ License: MIT-0
  The interaction is another user that verifies positively that your work contributed to move
  a thing from the lavoration step n to the n+1.
 
- Yeah I know you didn't understand what I'm talking about. Lets make a concrete example:
- a software company, may be an ecommerce software company, the website is built following a
+Lets make a concrete example in order to help you visualize the concepts:
+An 
+ecommerce software company, the website is built following a
  kanban or scrum agile process. Think at the board typical columns:
 
  NEW	 | TODO | IN PROGRESS | CODE REVIEW | QA | READY TO DEPLOY | DEPLOYED | QA PRODUCTION | DONE
