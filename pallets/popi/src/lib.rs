@@ -19,7 +19,7 @@ pub use weights::*;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::{pallet_prelude::*, Blake2_256, StorageMap};
+	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 
 	#[pallet::pallet]
@@ -32,6 +32,8 @@ pub mod pallet {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// Type representing the weight of this pallet
 		type WeightInfo: WeightInfo;
+		
+
 	}
 
 	// The pallet's runtime storage items.
@@ -42,7 +44,9 @@ pub mod pallet {
 	// https://docs.substrate.io/main-docs/build/runtime-storage/#declaring-storage-items
 	pub type Something<T> = StorageValue<_, u32>;
 
-	pub type SampleUnitStorag<T: Config> = StorageMap<
+	#[pallet::storage]
+	#[pallet::getter(fn storage_getter)]
+	pub type SampleUnitStorage<T: Config> = StorageMap<
 		_,
 		Blake2_128Concat, //hashing algorithm
 		T::AccountId,     //key

@@ -271,7 +271,6 @@ impl pallet_sudo::Config for Runtime {
 impl pallet_popi::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = pallet_popi::weights::SubstrateWeight<Runtime>;
-	type AccountId = AccountId;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
