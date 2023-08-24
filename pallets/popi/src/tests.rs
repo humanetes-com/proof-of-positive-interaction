@@ -1,5 +1,7 @@
 use crate::{mock::*, Error, Event};
 use frame_support::{assert_noop, assert_ok};
+#[test]
+fn i_know_how_to_work_with_vectors() {}
 
 #[test]
 fn it_works_for_default_value() {
@@ -7,9 +9,9 @@ fn it_works_for_default_value() {
 		// Go past genesis block so events get deposited
 		System::set_block_number(1);
 		// Dispatch a signed extrinsic.
-		assert_ok!(popiModule::do_something(RuntimeOrigin::signed(1), 42));
+		assert_ok!(PopiModule::do_something(RuntimeOrigin::signed(1), 42));
 		// Read pallet storage and assert an expected result.
-		assert_eq!(popiModule::something(), Some(42));
+		assert_eq!(PopiModule::something(), Some(42));
 		// Assert that the correct event was deposited
 		System::assert_last_event(Event::SomethingStored { something: 42, who: 1 }.into());
 	});
@@ -19,6 +21,6 @@ fn it_works_for_default_value() {
 fn correct_error_for_none_value() {
 	new_test_ext().execute_with(|| {
 		// Ensure the expected error is thrown when no value is present.
-		assert_noop!(popiModule::cause_error(RuntimeOrigin::signed(1)), Error::<Test>::NoneValue);
+		assert_noop!(PopiModule::cause_error(RuntimeOrigin::signed(1)), Error::<Test>::NoneValue);
 	});
 }
