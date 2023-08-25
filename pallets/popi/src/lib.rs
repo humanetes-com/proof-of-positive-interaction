@@ -40,8 +40,10 @@ pub mod pallet {
 	#[pallet::getter(fn something)]
 	// Learn more about declaring storage items:
 	// https://docs.substrate.io/main-docs/build/runtime-storage/#declaring-storage-items
+	#[pallet::storage]
 	pub type Something<T> = StorageValue<_, u32>;
 
+	#[pallet::storage]
 	pub type SampleUnitStorag<T: Config> = StorageMap<
 		_,
 		Blake2_128Concat, //hashing algorithm
