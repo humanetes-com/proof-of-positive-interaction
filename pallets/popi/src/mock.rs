@@ -17,7 +17,7 @@ frame_support::construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system,
-		popiModule: pallet_popi,
+		PopiModule: pallet_popi,
 	}
 );
 
