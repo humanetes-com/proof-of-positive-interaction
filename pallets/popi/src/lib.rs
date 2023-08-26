@@ -19,7 +19,7 @@ pub use weights::*;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::pallet_prelude::*;
+	use frame_support::pallet_prelude::{*, DispatchResult};
 	use frame_system::pallet_prelude::*;
 
 	#[pallet::pallet]
@@ -44,12 +44,13 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn storage_getter)]
-	pub type SampleUnitStorage<T: Config> = StorageMap<
+	pub type ExperienceStorage<T: Config> = StorageMap<
 		_,
 		Blake2_128Concat, //hashing algorithm
 		T::AccountId,     //key
 		(),               //value
 	>;
+
 	//pub type ListOfThings<T: Config> = StorageMap<_, Blake2_128Concat, T::AccountId, ()>;
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/main-docs/build/events-errors/
@@ -68,6 +69,40 @@ pub mod pallet {
 		NoneValue,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
+		/// Desired value does not exist in ExdperienceStorage
+		ValueDoesNotExist,
+		/// User already has experience
+		/// This error is thrown when a user tries to create a new experience when they already have one
+		UserAlreadyHasExperience,
+	}
+
+
+	/// This enum represents the different types of experience that a user can have
+	/// Ideally, we want to this to be extensible so that we can add more types of experience
+	pub enum ExperienceType {
+		Frontend,
+		Backend,
+		Marketing,
+		GraphicDesign,
+	}
+
+	/// This struct represents the a user's experience
+	/// Due to the types of experience that a user can have
+	pub struct UserExperience<T: Config> {
+		/// The user's account id
+		/// This allows for querying of user's with specific experience thresholds
+		account_id: T::AccountId,
+		/// The user's experience
+		experience: u128,
+		/// The user's experience level
+		/// This is calculated from the user's experience
+		level: u32,
+		/// Experience required to reach the next level
+		/// This is calculated from the user's experience
+		experience_to_next_level: u128,
+		/// Type of experience that this is referring to
+		/// Eg. Frontend, Backend, Marketing, Graphic Design, etc.
+		type_of_experience: ExperienceType,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -112,6 +147,31 @@ pub mod pallet {
 					Ok(())
 				},
 			}
+		}
+	}
+
+	/// The following impl and functions should not be accessible by the user
+	/// For any function that needs to be accessible by the user, use the above implementation (under #[pallet::call] attribute)
+	impl<T: Config> Pallet<T> {
+		/// Creates a new user experience, based on experience type and user id
+		/// Returns an error if the user already has experience
+		// fn create_user_experience(user: T::AccountId) -> DispatchResult {
+		// 	// Check if the user already has experience
+		// 	ExperienceStorage::<T>::get(user).ok_or(Error::<T>::UserAlreadyHasExperience.into())?;
+
+		// 	// Create a new user experience
+		// 	let new_user_experience = UserExperience {
+		// 		account_id: user,
+		// 		experience: 0,
+		// 		level: 0,
+		// 		experience_to_next_level: 100,
+		// 		type_of_experience: ExperienceType::Frontend,
+		// 	};
+		// }
+
+		/// Takes in a user id and returns the user's experience if it exists, otherwise returns an error
+		fn get_user_experience(user: T::AccountId) -> DispatchResult {
+			ExperienceStorage::<T>::get(user).ok_or(Error::<T>::ValueDoesNotExist.into())
 		}
 	}
 }
