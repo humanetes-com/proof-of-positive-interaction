@@ -32,6 +32,13 @@ pub mod pallet {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// Type representing the weight of this pallet
 		type WeightInfo: WeightInfo;
+		/// This is the amount of experience that a user needs to level up the first time
+		/// In addition, this will impact the amount of experience required to level up in the future
+		type BaseExperience: Get<u128>;
+		/// Represents the overall difficulty of leveling up
+		type LevelDifficulty: Get<u32>;
+		/// The multiplier for the amount of experience required to level up
+		type DifficultMultiplier: Get<u32>;
 	}
 
 	// The pallet's runtime storage items.
@@ -91,18 +98,18 @@ pub mod pallet {
 	pub struct UserExperience<T: Config> {
 		/// The user's account id
 		/// This allows for querying of user's with specific experience thresholds
-		account_id: T::AccountId,
+		pub account_id: T::AccountId,
 		/// The user's experience
-		experience: u128,
+		pub experience: u128,
 		/// The user's experience level
 		/// This is calculated from the user's experience
-		level: u32,
+		pub level: u32,
 		/// Experience required to reach the next level
 		/// This is calculated from the user's experience
-		experience_to_next_level: u128,
+		pub experience_to_next_level: u128,
 		/// Type of experience that this is referring to
 		/// Eg. Frontend, Backend, Marketing, Graphic Design, etc.
-		type_of_experience: ExperienceType,
+		pub type_of_experience: ExperienceType,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -155,19 +162,23 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		/// Creates a new user experience, based on experience type and user id
 		/// Returns an error if the user already has experience
-		// fn create_user_experience(user: T::AccountId) -> DispatchResult {
-		// 	// Check if the user already has experience
-		// 	ExperienceStorage::<T>::get(user).ok_or(Error::<T>::UserAlreadyHasExperience.into())?;
+		fn create_user_experience(user: T::AccountId) -> DispatchResult {
+			// Check if the user already has experience
+			if ExperienceStorage::<T>::contains_key(&user) {
+				return Err(Error::<T>::UserAlreadyHasExperience.into());
+			}
 
-		// 	// Create a new user experience
-		// 	let new_user_experience = UserExperience {
-		// 		account_id: user,
-		// 		experience: 0,
-		// 		level: 0,
-		// 		experience_to_next_level: 100,
-		// 		type_of_experience: ExperienceType::Frontend,
-		// 	};
-		// }
+			// Create a new user experience
+			let new_user_experience = UserExperience::<T> {
+				account_id: user,
+				experience: 0,
+				level: 0,
+				experience_to_next_level: 100,
+				type_of_experience: ExperienceType::Frontend,
+			};
+
+			Ok(())
+		}
 
 		/// Takes in a user id and returns the user's experience if it exists, otherwise returns an error
 		fn get_user_experience(user: T::AccountId) -> DispatchResult {

@@ -50,7 +50,10 @@ impl frame_system::Config for Test {
 
 impl pallet_popi::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = ();
+	type WeightInfo = pallet_popi::weights::SubstrateWeight<Runtime>;
+	type BaseExperience = ConstU128<100>;
+	type LevelDifficulty = ConstU32<10>;
+	type DifficultMultiplier = ConstU32<2>;
 }
 
 // Build genesis storage according to the mock runtime.
