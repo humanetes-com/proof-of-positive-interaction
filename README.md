@@ -2,7 +2,36 @@ License: MIT-0
 
  # POPI Pallet
 
- Proof of positive interaction. A collectivity that contributes toward a common goal.
+ Proof of positive interaction as way to introduce trustless, anonymous way of providing access to resources or operations. 
+ Use case:
+ You join a company, they know who are you, and create an account for you, in order to give you the right access to some resources.
+ Everything could be supersecure, following the most advanced guidelines about granurality on access to every single resource. Still
+ there two very bad aspects in the use case I described before.
+ 1. They know who are you. What does it mean? you give an id card, then suddently you're the guy on that picture.
+ We could do background checks, still we could at most, up to some extent, validate the companies you worked for. 
+ 
+ 2. once they decide up to some extend who are you, decide in a manual way, to create some accounts in order to provde access for you to things.
+ 
+ Just like we did gret improvements in the security literature by giving access not to monoliths, instead to every single resource, it would be amazing if we could for example validate every single task this person did. Wouldn't this be more expressfull of who you are?
+ * Non ideal identity about a person: Name, Software Engineer at CompanyX
+ * Ideal: Name, 
+ Pull request X, 
+ Approval Y, 
+ Code review Z, 
+ Given Talk about X, 
+ Proof of attendance ZX
+ 
+ Once we have a way to validate your actions as set of positive interactions between you and other actions. Considering we have the ranking of each of those actors, we may rely on those actors validation.
+ 
+*Where are we different from Keybase
+
+Actually keybase 
+*Differences with Gitcoin
+
+*Differences with Sourcecreed
+
+
+ A collectivity that contributes toward a common goal.
  There are different kind of products that may be built, each will go through
  a set of lavoration steps. A lavoration step is registered onchain through an interaction.
  The interaction is another user that verifies positively that your work contributed to move
