@@ -50,6 +50,21 @@ pub mod pallet {
 		T::AccountId,     //key
 		(),               //value
 	>;
+//
+	#[pallet::storage]
+	type SomePrivateValue<T> = StorageValue<
+		_,
+		u32,
+		ValueQuery
+	>;
+	#[pallet::storage]
+	#[pallet::getter(fn some_prim_value)]
+	pub(super) type SomePrimValue<T> = StorageValue<_, u32, ValueQuery>;
+
+	// #[pallet::storage]
+	// pub(super) type SomeComplexValue<T: Config> = StorageValue<_, T::AccountId, ValueQuery>;
+//
+
 	//pub type ListOfThings<T: Config> = StorageMap<_, Blake2_128Concat, T::AccountId, ()>;
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/main-docs/build/events-errors/
