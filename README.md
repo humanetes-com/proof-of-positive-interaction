@@ -2,45 +2,13 @@ License: MIT-0
 
  # POPI Pallet
 
- Proof of positive interaction as way to introduce trustless, anonymous way of providing access to resources or operations. 
- Use case:
- You join a company, they know who are you, and create an account for you, in order to give you the right access to some resources.
- Everything could be supersecure, following the most advanced guidelines about granurality on access to every single resource. Still
- there two very bad aspects in the use case I described before.
- 1. They know who are you. What does it mean? you give an id card, then suddently you're the guy on that picture.
- We could do background checks, still we could at most, up to some extent, validate the companies you worked for. 
- 
- 2. once they decide up to some extend who are you, decide in a manual way, to create some accounts in order to provde access for you to things.
- 
- Just like we did gret improvements in the security literature by giving access not to monoliths, instead to every single resource, it would be amazing if we could for example validate every single task this person did. Wouldn't this be more expressfull of who you are?
- * Non ideal identity about a person: Name, Software Engineer at CompanyX
- * Ideal: Name, 
- Pull request X, 
- Approval Y, 
- Code review Z, 
- Given Talk about X, 
- Proof of attendance ZX
- 
- Once we have a way to validate your actions as set of positive interactions between you and other actions. Considering we have the ranking of each of those actors, we may rely on those actors validation.
- 
-*Where are we different from Keybase
+ Proof of positive interaction. A collectivity that contributes toward a common goal.
+ There are different kind of things that may be built, each thing will go through
+ a set of lavoration steps, or to better call, interactions, registered on chain, as a proof of an increment that happened off-chain. This is in simple terms another user that verifies positively that your work contributed to move a product from the lavoration step n to the n+1.
 
-Actually keybase 
-*Differences with Gitcoin
-
-*Differences with Sourcecreed
-
-
- A collectivity that contributes toward a common goal.
- There are different kind of products that may be built, each will go through
- a set of lavoration steps. A lavoration step is registered onchain through an interaction.
- The interaction is another user that verifies positively that your work contributed to move
- a thing from the lavoration step n to the n+1.
-
-Lets make a concrete example in order to help you visualize the concepts:
-An 
-ecommerce software company, the website is built following a
- kanban or scrum agile process. Think at the board typical columns:
+Lets make a concrete example:
+ a software company that is building an ecommerce website. They are following a
+ kanban or scrum agile process reflected in a typical board with those columns:
 
  NEW	 | TODO | IN PROGRESS | CODE REVIEW | QA | READY TO DEPLOY | DEPLOYED | QA PRODUCTION | DONE
         Task1
@@ -60,8 +28,7 @@ ecommerce software company, the website is built following a
  Every task must follow all the steps from NEW to DONE. The progress can never be done by the
  same person who worked on this specific task in this specific column.
 
- Lets make an example:
- Task: change a color of a text "Click here to signin" from RED To Yellow.
+ Task: change a color of a text "Click here to sign in" from RED To Yellow.
 
  This task is created by UI. The task goes inmediately to the NEW column.
  PO moves this to TODO.
@@ -90,11 +57,13 @@ ecommerce software company, the website is built following a
  out the must fair way to earn experience, thinking also on how to resist to attacks by
  introducing a few constraints:
 
- I already mentioned the first constraint, the most important: we work on a specific phase of a
- task, set this as ready, but only another person may pull this task. Not anyone is capable of
- pulling a task, but depending of the column, only an expert on that role may pull that task.
+ I already mentioned the first set of constraints that takes place every time we work on a specific phase of a
+ task(or column) and set this as ready:
+ 1. we may not move it to the next column: only another person may pull this task. 
+ 2. Not anyone is capable of pulling a task, but depending of the column, only an expert on that role may pull that task.
+
  What makes you expert on something? We're talking about roles, roles are not preset. Like a QA
- says " I am QA" or a root whitelist the user as QA. Tha'ts not what we want. Any person may work
+ says " I am QA" or a root whitelist the user as QA. That's not what we want. Any person may work
  on any kind of task, once someone else approves your task, we're setting a milestone. Someone is
  saying "this person did a good job for this specific task in this specific phase". I'm setting a
  STAMP. This stamp, makes the person which work on this task earn some experience points.
@@ -136,8 +105,7 @@ ecommerce software company, the website is built following a
  by a developer and moved to "READY TO BE RELEASED" e. when the task is deployed by a release
  engineer or a developer, or a devops, this will increase the ranking of the PO.
 
- I hope now it is clear when I say that a person don't decides her role. Her role is an
- experience depending on positive proof of interactiosn with other experts. Of course initially
+ I hope now it is clear when I say that a person doesn't decides her role. Her role is an aggregate of positive proof of interactions with other experts. Of course initially
  in the project there will be no experts. Perhaps a ROOT could define initial roles, but I like
  more the idea of initially every person has 0 as experience, and is allowed to approve
  everything. We could define a formula that takes the norm of the experience on each role and
@@ -155,3 +123,26 @@ ecommerce software company, the website is built following a
 
  As I said before, what defines the a person to be a developer, is based on her experience, that
  must be higher than the norm of all accounts in that specific role
+
+# About identity
+
+ Use case:
+ You join a company, they know who are you, and create an account for you, in order to give you the right access to some resources.
+ Everything could be supersecure, following the most advanced guidelines about granurality on access to every single resource. Still
+ there two very bad aspects in the use case I described before.
+ 1. They know who are you. What does it mean? you give an id card, then suddently you're the guy on that picture.
+ We could do background checks, still we could at most, up to some extent, validate the companies you worked for. 
+ 
+ 2. once they decide up to some extend who are you, decide in a manual way, to create some accounts in order to provde access for you to things.
+ 
+ Just like we did great improvements in the security literature by giving access not to monoliths, instead to every single resource, it would be amazing if we could for example validate every single task this person did. Wouldn't this be more expressfull of who you are?
+ * Non ideal identity about a person: Name, Software Engineer at CompanyX
+ * Ideal: Name, 
+ Pull request X, 
+ Approval Y, 
+ Code review Z, 
+ Given Talk about X, 
+ Proof of attendance ZX
+ 
+ Once we have a way to validate your actions as set of positive interactions between you and other actions. Considering we have the ranking of each of those actors, we may rely on those actors validation.
+ 
