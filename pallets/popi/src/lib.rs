@@ -19,24 +19,29 @@ pub use weights::*;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::pallet_prelude::{*, DispatchResult};
+	use frame_support::pallet_prelude::{DispatchResult, *};
 	use frame_system::pallet_prelude::*;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
+	///
+	/// For additional information on BaseExperience, LevelDifficulty, and DifficultMultiplier, check `fn calculate_exp_to_next_level`.
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// Type representing the weight of this pallet
 		type WeightInfo: WeightInfo;
+		#[pallet::constant]
 		/// This is the amount of experience that a user needs to level up the first time
 		/// In addition, this will impact the amount of experience required to level up in the future
 		type BaseExperience: Get<u128>;
+		#[pallet::constant]
 		/// Represents the overall difficulty of leveling up
 		type LevelDifficulty: Get<u32>;
+		#[pallet::constant]
 		/// The multiplier for the amount of experience required to level up
 		type DifficultMultiplier: Get<u32>;
 	}
@@ -51,12 +56,8 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn storage_getter)]
-	pub type ExperienceStorage<T: Config> = StorageMap<
-		_,
-		Blake2_128Concat, //hashing algorithm
-		T::AccountId,     //key
-		(),               //value
-	>;
+	pub type ExperienceStorage<T: Config> =
+		StorageMap<_, Blake2_128Concat, T::AccountId, UserExperience<T>>;
 
 	//pub type ListOfThings<T: Config> = StorageMap<_, Blake2_128Concat, T::AccountId, ()>;
 	// Pallets use events to inform users when important changes are made.
@@ -83,7 +84,7 @@ pub mod pallet {
 		UserAlreadyHasExperience,
 	}
 
-
+	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug)]
 	/// This enum represents the different types of experience that a user can have
 	/// Ideally, we want to this to be extensible so that we can add more types of experience
 	pub enum ExperienceType {
@@ -93,6 +94,8 @@ pub mod pallet {
 		GraphicDesign,
 	}
 
+	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug)]
+	#[scale_info(skip_type_params(T))]
 	/// This struct represents the a user's experience
 	/// Due to the types of experience that a user can have
 	pub struct UserExperience<T: Config> {
@@ -162,19 +165,19 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		/// Creates a new user experience, based on experience type and user id
 		/// Returns an error if the user already has experience
-		fn create_user_experience(user: T::AccountId) -> DispatchResult {
+		fn create_user_experience(user: T::AccountId, exp_type: ExperienceType) -> DispatchResult {
 			// Check if the user already has experience
 			if ExperienceStorage::<T>::contains_key(&user) {
 				return Err(Error::<T>::UserAlreadyHasExperience.into());
 			}
 
 			// Create a new user experience
-			let new_user_experience = UserExperience::<T> {
+			let new_user_exp = UserExperience::<T> {
 				account_id: user,
 				experience: 0,
 				level: 0,
-				experience_to_next_level: 100,
-				type_of_experience: ExperienceType::Frontend,
+				experience_to_next_level: T::BaseExperience::get(),
+				type_of_experience: exp_type,
 			};
 
 			Ok(())
@@ -182,7 +185,23 @@ pub mod pallet {
 
 		/// Takes in a user id and returns the user's experience if it exists, otherwise returns an error
 		fn get_user_experience(user: T::AccountId) -> DispatchResult {
-			ExperienceStorage::<T>::get(user).ok_or(Error::<T>::ValueDoesNotExist.into())
+			// ExperienceStorage::<T>::get(user).ok_or(Error::<T>::ValueDoesNotExist.into());
+			unimplemented!()
+		}
+
+		fn update_user_experience(
+			user: T::AccountId,
+			experience: UserExperience<T>,
+		) -> DispatchResult {
+			unimplemented!()
+		}
+
+		/// Usees our Config types to calculate the amount of experience required to level up
+		fn calculate_exp_to_next_level(
+			experience: UserExperience<T>,
+			level: u32,
+		) -> DispatchResult {
+			unimplemented!()
 		}
 	}
 }
