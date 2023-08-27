@@ -27,7 +27,7 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	///
-	/// For additional information on BaseExperience, LevelDifficulty, and DifficultMultiplier, check `fn calculate_exp_to_next_level`.
+	/// For additional information on BaseExperience, LevelDifficulty, and DifficultyMultiplier, check `fn calculate_exp_to_next_level`.
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
@@ -43,7 +43,16 @@ pub mod pallet {
 		type LevelDifficulty: Get<u32>;
 		#[pallet::constant]
 		/// The multiplier for the amount of experience required to level up
-		type DifficultMultiplier: Get<u32>;
+		type DifficultyMultiplier: Get<u32>;
+
+		/*
+		level 1: 100
+		level 2: 200
+		level 3: 400
+		level 4: 800
+		level 5: 1600
+		BaseExperience * DifficultyMultiplier ^ (LevelDifficulty * (level - 1))
+		 */
 	}
 
 	// The pallet's runtime storage items.

@@ -53,7 +53,7 @@ impl pallet_popi::Config for Test {
 	type WeightInfo = ();
 	type BaseExperience = ConstU128<100>;
 	type LevelDifficulty = ConstU32<10>;
-	type DifficultMultiplier = ConstU32<2>;
+	type DifficultyMultiplier = ConstU32<2>;
 }
 
 // Build genesis storage according to the mock runtime.
