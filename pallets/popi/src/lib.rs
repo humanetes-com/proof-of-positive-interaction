@@ -56,8 +56,18 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn storage_getter)]
-	pub type ExperienceStorage<T: Config> =
-		StorageMap<_, Blake2_128Concat, T::AccountId, UserExperience<T>>;
+	pub type ExperienceStorage<T: Config> = StorageMap<
+		_,
+		Blake2_128Concat,
+		(
+			// This is the user's account id
+			T::AccountId,
+			// This is the type of experience that the user has
+			ExperienceType,
+		),
+		// This is the user's experience struct, specific to the exact "ExperienceType"
+		UserExperience<T>,
+	>;
 
 	//pub type ListOfThings<T: Config> = StorageMap<_, Blake2_128Concat, T::AccountId, ()>;
 	// Pallets use events to inform users when important changes are made.
@@ -78,13 +88,13 @@ pub mod pallet {
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
 		/// Desired value does not exist in ExdperienceStorage
-		ValueDoesNotExist,
+		UserExperienceDoesNotExist,
 		/// User already has experience
 		/// This error is thrown when a user tries to create a new experience when they already have one
 		UserAlreadyHasExperience,
 	}
 
-	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug)]
+	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug, Clone, Copy)]
 	/// This enum represents the different types of experience that a user can have
 	/// Ideally, we want to this to be extensible so that we can add more types of experience
 	pub enum ExperienceType {
@@ -110,9 +120,6 @@ pub mod pallet {
 		/// Experience required to reach the next level
 		/// This is calculated from the user's experience
 		pub experience_to_next_level: u128,
-		/// Type of experience that this is referring to
-		/// Eg. Frontend, Backend, Marketing, Graphic Design, etc.
-		pub type_of_experience: ExperienceType,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -165,28 +172,29 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		/// Creates a new user experience, based on experience type and user id
 		/// Returns an error if the user already has experience
-		fn create_user_experience(user: T::AccountId, exp_type: ExperienceType) -> DispatchResult {
+		// May add "ensure_signed(origin)?" later on
+		pub fn create_user_experience(user: T::AccountId, exp_type: ExperienceType) -> DispatchResult {
 			// Check if the user already has experience
-			if ExperienceStorage::<T>::contains_key(&user) {
+			if ExperienceStorage::<T>::contains_key((&user, &exp_type)) {
 				return Err(Error::<T>::UserAlreadyHasExperience.into());
 			}
 
 			// Create a new user experience
 			let new_user_exp = UserExperience::<T> {
-				account_id: user,
+				account_id: user.clone(),
 				experience: 0,
 				level: 0,
 				experience_to_next_level: T::BaseExperience::get(),
-				type_of_experience: exp_type,
 			};
 
+			// Store the new user experience
+			ExperienceStorage::<T>::set((user, &exp_type), Some(new_user_exp));
 			Ok(())
 		}
 
 		/// Takes in a user id and returns the user's experience if it exists, otherwise returns an error
-		fn get_user_experience(user: T::AccountId) -> DispatchResult {
-			// ExperienceStorage::<T>::get(user).ok_or(Error::<T>::ValueDoesNotExist.into());
-			unimplemented!()
+		pub fn get_user_experience(user: T::AccountId, exp_type: ExperienceType) -> Result<UserExperience<T>, Error<T>> {
+			ExperienceStorage::<T>::get((user, &exp_type)).ok_or(Error::<T>::UserExperienceDoesNotExist)
 		}
 
 		fn update_user_experience(
