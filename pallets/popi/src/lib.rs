@@ -19,19 +19,40 @@ pub use weights::*;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::pallet_prelude::*;
+	use frame_support::pallet_prelude::{DispatchResult, *};
 	use frame_system::pallet_prelude::*;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
+	///
+	/// For additional information on BaseExperience, LevelDifficulty, and DifficultyMultiplier, check `fn calculate_exp_to_next_level`.
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// Type representing the weight of this pallet
 		type WeightInfo: WeightInfo;
+		#[pallet::constant]
+		/// This is the amount of experience that a user needs to level up the first time
+		/// In addition, this will impact the amount of experience required to level up in the future
+		type BaseExperience: Get<u128>;
+		#[pallet::constant]
+		/// Represents the overall difficulty of leveling up
+		type LevelDifficulty: Get<u32>;
+		#[pallet::constant]
+		/// The multiplier for the amount of experience required to level up
+		type DifficultyMultiplier: Get<u32>;
+
+		/*
+		level 1: 100
+		level 2: 200
+		level 3: 400
+		level 4: 800
+		level 5: 1600
+		BaseExperience * DifficultyMultiplier ^ (LevelDifficulty * (level - 1))
+		 */
 	}
 
 	// The pallet's runtime storage items.
@@ -44,12 +65,19 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn storage_getter)]
-	pub type SampleUnitStorage<T: Config> = StorageMap<
+	pub type ExperienceStorage<T: Config> = StorageMap<
 		_,
-		Blake2_128Concat, //hashing algorithm
-		T::AccountId,     //key
-		(),               //value
+		Blake2_128Concat,
+		(
+			// This is the user's account id
+			T::AccountId,
+			// This is the type of experience that the user has
+			ExperienceType,
+		),
+		// This is the user's experience struct, specific to the exact "ExperienceType"
+		UserExperience<T>,
 	>;
+
 	//pub type ListOfThings<T: Config> = StorageMap<_, Blake2_128Concat, T::AccountId, ()>;
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/main-docs/build/events-errors/
@@ -68,6 +96,39 @@ pub mod pallet {
 		NoneValue,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
+		/// Desired value does not exist in ExdperienceStorage
+		UserExperienceDoesNotExist,
+		/// User already has experience
+		/// This error is thrown when a user tries to create a new experience when they already have one
+		UserAlreadyHasExperience,
+	}
+
+	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug, Clone, Copy)]
+	/// This enum represents the different types of experience that a user can have
+	/// Ideally, we want to this to be extensible so that we can add more types of experience
+	pub enum ExperienceType {
+		Frontend,
+		Backend,
+		Marketing,
+		GraphicDesign,
+	}
+
+	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug)]
+	#[scale_info(skip_type_params(T))]
+	/// This struct represents the a user's experience
+	/// Due to the types of experience that a user can have
+	pub struct UserExperience<T: Config> {
+		/// The user's account id
+		/// This allows for querying of user's with specific experience thresholds
+		pub account_id: T::AccountId,
+		/// The user's experience
+		pub experience: u128,
+		/// The user's experience level
+		/// This is calculated from the user's experience
+		pub level: u32,
+		/// Experience required to reach the next level
+		/// This is calculated from the user's experience
+		pub experience_to_next_level: u128,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -112,6 +173,52 @@ pub mod pallet {
 					Ok(())
 				},
 			}
+		}
+	}
+
+	/// The following impl and functions should not be accessible by the user
+	/// For any function that needs to be accessible by the user, use the above implementation (under #[pallet::call] attribute)
+	impl<T: Config> Pallet<T> {
+		/// Creates a new user experience, based on experience type and user id
+		/// Returns an error if the user already has experience
+		// May add "ensure_signed(origin)?" later on
+		pub fn create_user_experience(user: T::AccountId, exp_type: ExperienceType) -> DispatchResult {
+			// Check if the user already has experience
+			if ExperienceStorage::<T>::contains_key((&user, &exp_type)) {
+				return Err(Error::<T>::UserAlreadyHasExperience.into());
+			}
+
+			// Create a new user experience
+			let new_user_exp = UserExperience::<T> {
+				account_id: user.clone(),
+				experience: 0,
+				level: 0,
+				experience_to_next_level: T::BaseExperience::get(),
+			};
+
+			// Store the new user experience
+			ExperienceStorage::<T>::set((user, &exp_type), Some(new_user_exp));
+			Ok(())
+		}
+
+		/// Takes in a user id and returns the user's experience if it exists, otherwise returns an error
+		pub fn get_user_experience(user: T::AccountId, exp_type: ExperienceType) -> Result<UserExperience<T>, Error<T>> {
+			ExperienceStorage::<T>::get((user, &exp_type)).ok_or(Error::<T>::UserExperienceDoesNotExist)
+		}
+
+		fn update_user_experience(
+			user: T::AccountId,
+			experience: UserExperience<T>,
+		) -> DispatchResult {
+			unimplemented!()
+		}
+
+		/// Usees our Config types to calculate the amount of experience required to level up
+		fn calculate_exp_to_next_level(
+			experience: UserExperience<T>,
+			level: u32,
+		) -> DispatchResult {
+			unimplemented!()
 		}
 	}
 }

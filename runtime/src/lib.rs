@@ -271,6 +271,9 @@ impl pallet_sudo::Config for Runtime {
 impl pallet_popi::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = pallet_popi::weights::SubstrateWeight<Runtime>;
+	type BaseExperience = ConstU128<100>;
+	type LevelDifficulty = ConstU32<10>;
+	type DifficultyMultiplier = ConstU32<2>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.

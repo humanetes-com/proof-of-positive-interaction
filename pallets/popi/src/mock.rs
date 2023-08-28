@@ -1,6 +1,6 @@
 use crate as pallet_popi;
 use frame_support::traits::{ConstU16, ConstU64};
-use sp_core::H256;
+use sp_core::{H256, ConstU128, ConstU32};
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
@@ -17,7 +17,7 @@ frame_support::construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system,
-		PopiModule: pallet_popi,
+		Popi: pallet_popi,
 	}
 );
 
@@ -51,6 +51,9 @@ impl frame_system::Config for Test {
 impl pallet_popi::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
+	type BaseExperience = ConstU128<100>;
+	type LevelDifficulty = ConstU32<10>;
+	type DifficultyMultiplier = ConstU32<2>;
 }
 
 // Build genesis storage according to the mock runtime.
