@@ -19,6 +19,7 @@ pub use weights::*;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
+	
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 
@@ -32,6 +33,7 @@ pub mod pallet {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// Type representing the weight of this pallet
 		type WeightInfo: WeightInfo;
+
 	}
 
 	// The pallet's runtime storage items.
@@ -50,9 +52,8 @@ pub mod pallet {
 		(
 			T::AccountId, //Account for the creator of the task
 			TaskValue, // Modetary Value for task
-			TaskExp, // Experience points for the task
 		),
-		UserExperience<T>,
+		TaskExp<T>, // Experience points for the task
 	>;
 
 	// #[pallet::storage]
@@ -84,33 +85,16 @@ pub mod pallet {
 	#[scale_info(skip_type_params(T))]
 	pub struct TaskValue {
 		pub value: u128,
-		pub proitiy_level: u8,
+		pub priority_level: u8,
 	}
 	
 	// This stuct repesents the amount of exp a task will have
-	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug, Clone, Copy)]
+	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug, Clone,)]
 	#[scale_info(skip_type_params(T))]
-	pub struct TaskExp {
-		pub level: u32,
-		pub proitiy_level: u8,
-	}
-
-	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug)]
-	#[scale_info(skip_type_params(T))]
-	/// This struct represents the a user's experience
-	/// Due to the types of experience that a user can have
-	pub struct UserExperience<T: Config> {
-		/// The user's account id
-		/// This allows for querying of user's with specific experience thresholds
-		pub account_id: T::AccountId,
-		/// The user's experience
-		pub experience: u128,
-		/// The user's experience level
-		/// This is calculated from the user's experience
-		pub level: u32,
-		/// Experience required to reach the next level
-		/// This is calculated from the user's experience
-		pub experience_to_next_level: u128,
+	pub struct TaskExp<T: Config>{
+		pub creator_id: T::AccountId, // Account Id for the creator of the Task
+		// pub task: String, 
+		pub priority_level: u8,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -155,6 +139,24 @@ pub mod pallet {
 					Ok(())
 				},
 			}
+		}
+	}
+
+		
+	impl<T: Config> Pallet<T> {
+	
+		pub fn create_task(user: T::AccountId, task_value: TaskValue) -> DispatchResult {
+
+			// Create a new task
+			let new_task = TaskExp::<T> {
+				creator_id: user.clone(),
+				// task: "".to_string(),
+				priority_level: 0,
+			};
+
+			// Store the new task
+			TaskStorage::<T>::set((user, &task_value), Some(new_task));
+			Ok(())
 		}
 	}
 }
