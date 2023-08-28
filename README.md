@@ -72,12 +72,13 @@ Lets make a concrete example:
  are given by different roles, we want to have a good granurality level keeping track of all
  those aspects in a multidimensional matrix:
 
-  person given stamps by role | role1 | role 2 | role 3 | role 4
+  person given stamps by role | role1 | role 2 | role 3 | role 4 | role 5
  worked on kind of task:
  kind 1
  kind 2
  kind 3
  kind 4
+ kind 5
 
  so for example, think on someone who is a bit QA, a bit developer.
 
