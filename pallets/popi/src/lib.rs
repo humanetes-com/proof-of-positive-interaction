@@ -41,25 +41,19 @@ pub mod pallet {
 	// Learn more about declaring storage items:
 	// https://docs.substrate.io/main-docs/build/runtime-storage/#declaring-storage-items
 	pub type Something<T> = StorageValue<_, u32>;
-
-	#[pallet::storage]
-	#[pallet::getter(fn storage_getter)]
-	pub type SampleUnitStorage<T: Config> = StorageMap<
-		_,
-		Blake2_128Concat, //hashing algorithm
-		T::AccountId,     //key
-		(),               //value
-	>;
 //
 	#[pallet::storage]
-	type SomePrivateValue<T> = StorageValue<
+	#[pallet::getter(fn task_getter)]
+	pub type TaskStorage<T: Config> = StorageMap<
 		_,
-		u32,
-		ValueQuery
+		Blake2_128Concat,
+		(
+			T::AccountId, //Account for the creator of the task
+			TaskValue, // Modetary Value for task
+			TaskExp, // Experience points for the task
+		),
+		UserExperience<T>,
 	>;
-	#[pallet::storage]
-	#[pallet::getter(fn some_prim_value)]
-	pub(super) type SomePrimValue<T> = StorageValue<_, u32, ValueQuery>;
 
 	// #[pallet::storage]
 	// pub(super) type SomeComplexValue<T: Config> = StorageValue<_, T::AccountId, ValueQuery>;
@@ -83,6 +77,40 @@ pub mod pallet {
 		NoneValue,
 		/// Errors should have helpful documentation associated with them.
 		StorageOverflow,
+	}
+	
+	// This stuct repesents the amount of modetary value the task has
+	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug, Clone, Copy)]
+	#[scale_info(skip_type_params(T))]
+	pub struct TaskValue {
+		pub value: u128,
+		pub proitiy_level: u8,
+	}
+	
+	// This stuct repesents the amount of exp a task will have
+	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug, Clone, Copy)]
+	#[scale_info(skip_type_params(T))]
+	pub struct TaskExp {
+		pub level: u32,
+		pub proitiy_level: u8,
+	}
+
+	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug)]
+	#[scale_info(skip_type_params(T))]
+	/// This struct represents the a user's experience
+	/// Due to the types of experience that a user can have
+	pub struct UserExperience<T: Config> {
+		/// The user's account id
+		/// This allows for querying of user's with specific experience thresholds
+		pub account_id: T::AccountId,
+		/// The user's experience
+		pub experience: u128,
+		/// The user's experience level
+		/// This is calculated from the user's experience
+		pub level: u32,
+		/// Experience required to reach the next level
+		/// This is calculated from the user's experience
+		pub experience_to_next_level: u128,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
