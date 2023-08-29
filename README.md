@@ -53,15 +53,16 @@ Lets make a concrete example:
  3. another developer will see the task as ready to be pulled and move it to Code review,
  and so on.
 
- This Pallet is about the experience a person earns for working on something. We tried to figure
- out the must fair way to earn experience, thinking also on how to resist to attacks by
+ This Pallet is about the experience a person earns for working on something, by aggregating your experiences we're able to introduce an anonymous way of identifying yourself.
+ 
+We tried to figure out the most fair way to earn experience, thinking also on how to resist to attacks by
  introducing a few constraints:
 
- I already mentioned the first set of constraints that takes place every time we work on a specific phase of a
- task(or column) and set this as ready:
- 1. we may not move it to the next column: only another person may pull this task. 
- 2. Not anyone is capable of pulling a task, but depending of the column, only an expert on that role may pull that task.
+ 1. we may not move our task to the next column: only another person may move forward this task to the next column
+ 2. Not anyone is capable of moving forward a task, but depending of the column, only an expert on that role may pull that task.
 
+For example: A pull request may be approved only by an engineer, only tested by a QA. But what does it mean you're an engineer or a QA?
+ 
  What makes you expert on something? We're talking about roles, roles are not preset. Like a QA
  says " I am QA" or a root whitelist the user as QA. That's not what we want. Any person may work
  on any kind of task, once someone else approves your task, we're setting a milestone. Someone is
@@ -127,22 +128,25 @@ Lets make a concrete example:
 # About identity
 
  Use case:
+Proof of positive interaction as way to introduce trustless, anonymous way of providing access to resources or operations. 
+ Use case:
  You join a company, they know who are you, and create an account for you, in order to give you the right access to some resources.
  Everything could be supersecure, following the most advanced guidelines about granurality on access to every single resource. Still
  there two very bad aspects in the use case I described before.
  1. They know who are you. What does it mean? you give an id card, then suddently you're the guy on that picture.
  We could do background checks, still we could at most, up to some extent, validate the companies you worked for. 
- 
- 2. once they decide up to some extend who are you, decide in a manual way, to create some accounts in order to provde access for you to things.
- 
- Just like we did great improvements in the security literature by giving access not to monoliths, instead to every single resource, it would be amazing if we could for example validate every single task this person did. Wouldn't this be more expressfull of who you are?
+
+ 2. once they decide up to some extend who are you, decide in a manual way, to create some accounts in order to provide access for you to things.
+
+ We did great improvements in the security literature evolving from access to monoliths to instead restricting or granting access to every single resource that makes sense. It would be amazing if we could for example validate the capability to execute a task based on the passt story of that person, not on who that person is. In the end we just want the most capable person in something to to that specific thing. 
  * Non ideal identity about a person: Name, Software Engineer at CompanyX
- * Ideal: Name, 
+ * Ideal: 
+ AccountId(i.e. public key)
  Pull request X, 
  Approval Y, 
  Code review Z, 
  Given Talk about X, 
  Proof of attendance ZX
- 
+
  Once we have a way to validate your actions as set of positive interactions between you and other actions. Considering we have the ranking of each of those actors, we may rely on those actors validation.
- 
+
