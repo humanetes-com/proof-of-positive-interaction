@@ -19,7 +19,7 @@ pub use weights::*;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::pallet_prelude::{DispatchResult, *};
+	use frame_support::{pallet_prelude::{DispatchResult, *}, pallet};
 	use frame_system::pallet_prelude::*;
 
 	#[pallet::pallet]
@@ -44,6 +44,9 @@ pub mod pallet {
 		#[pallet::constant]
 		/// The multiplier for the amount of experience required to level up
 		type DifficultyMultiplier: Get<u32>;
+		#[pallet::constant]
+		/// Amount of ExperienceType that can be entered into a task
+		type ExperienceOptionLimit: Get<u32>;
 
 		/*
 		level 1: 100
@@ -54,6 +57,13 @@ pub mod pallet {
 		BaseExperience * DifficultyMultiplier ^ (LevelDifficulty * (level - 1))
 		 */
 	}
+
+	// This will be modified later, once we find a way to link to a project board
+	/// Represents the id of a project board.
+	/// There will be used as a one-to-many relationship with `TaskId`
+	type ProjectId = u32;
+	/// Represents the id of an individual task inside of a project board
+	type TaskId = u32;
 
 	// The pallet's runtime storage items.
 	// https://docs.substrate.io/main-docs/build/runtime-storage/
@@ -73,6 +83,22 @@ pub mod pallet {
 			T::AccountId,
 			// This is the type of experience that the user has
 			ExperienceType,
+		),
+		// This is the user's experience struct, specific to the exact "ExperienceType"
+		UserExperience<T>,
+	>;
+
+	
+	#[pallet::storage]
+	#[pallet::getter(fn kanban_storage_getter)]
+	pub type KanbanStorage<T: Config> = StorageMap<
+		_,
+		Blake2_128Concat,
+		(
+			// This is the ID of the project board
+			ProjectId,
+			// This is the type of experience that the user has
+			TaskId,
 		),
 		// This is the user's experience struct, specific to the exact "ExperienceType"
 		UserExperience<T>,
@@ -130,6 +156,27 @@ pub mod pallet {
 		/// This is calculated from the user's experience
 		pub experience_to_next_level: u128,
 	}
+
+	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug)]
+	/// Task that is stored in the KanbanStorage
+	/// These belong to the project, but not a user. User's can, however, read/interact with this
+	pub struct Task<T: Config> {
+		/// The task's id
+		pub task_id: TaskId,
+		/// Owner of the task
+		pub owner: T::AccountId,
+		/// The task's experience type
+		pub experience_type: [ExperienceType; 5],
+		/// The task's experience reward
+		pub experience_reward: u128,
+		/// The task's project id
+		pub project_id: ProjectId,
+		/// The task's status
+		// pub status: TaskStatus,
+		/// The task's assignee
+		pub assignee: T::AccountId,
+	}
+
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
 	// These functions materialize as "extrinsics", which are often compared to transactions.
