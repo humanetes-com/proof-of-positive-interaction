@@ -1,1 +1,1 @@
-Removing the content of this readme to avoid duplicated content in the main README
+merging this README.md with the main one to avoid duplication and confusion
