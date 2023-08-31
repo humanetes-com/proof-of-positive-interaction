@@ -17,6 +17,7 @@ pub mod weights;
 pub use weights::*;
 
 use pallet_timestamp::{self as timestamp};
+
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
@@ -77,10 +78,9 @@ pub mod pallet {
 	/// determined by a source AccountId on the work done by another dest accountId
 	///
 	/// TWOX-NOTE: Safe, as increasing integer keys are safe.
+	//#[pallet::getter(fn positive_interaction_getter)]
 	#[pallet::storage]
-	#[pallet::getter(fn positive_interaction_getter)]
-	pub type PositiveInteraction<T: Config> =
-		StorageMap<_, Twox64Concat, UniqueProjectIdentifier<T>, ()>;
+	pub type Interaction<T: Config> = StorageMap<_, Twox64Concat, UniqueProjectIdentifier<T>, ()>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn storage_getter)]
@@ -121,6 +121,9 @@ pub mod pallet {
 		/// This error is thrown when a user tries to create a new experience when they already
 		/// have one
 		UserAlreadyHasExperience,
+		/// an interaction is identified univoquely by (approver, worker, project_id, task_id,
+		/// src_state, dst_state)
+		InteractionExisting,
 	}
 
 	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug, Clone, Copy)]
@@ -136,8 +139,8 @@ pub mod pallet {
 	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug, Clone, Copy)]
 	#[scale_info(skip_type_params(T))]
 	pub struct UniqueProjectIdentifier<T: Config> {
-		source_account_id: T::AccountId,
-		destination_account_id: T::AccountId,
+		approver: T::AccountId,
+		worker: T::AccountId,
 		board_id: u32,
 		task_id: u32,
 	}
@@ -199,6 +202,21 @@ pub mod pallet {
 	/// For any function that needs to be accessible by the user, use the above implementation
 	/// (under #[pallet::call] attribute)
 	impl<T: Config> Pallet<T> {
+		pub fn interact(
+			origin: OriginFor<T>,
+			worker: T::AccountId,
+			board_id: u32,
+			task_id: u32,
+		) -> DispatchResult {
+			let approver = ensure_signed(origin)?;
+			let interaction = UniqueProjectIdentifier::<T> { approver, worker, board_id, task_id };
+			if Interaction::<T>::contains_key(&interaction) {
+				return Err(Error::<T>::InteractionExisting.into())
+			}
+			Interaction::<T>::insert(&interaction, ());
+			//after interaction I create an experience.
+			Ok(())
+		}
 		/// Creates a new user experience, based on experience type and user id
 		/// Returns an error if the user already has experience
 		// May add "ensure_signed(origin)?" later on

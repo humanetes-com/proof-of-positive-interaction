@@ -12,6 +12,17 @@ fn correct_error_for_none_value() {
 }
 
 #[test]
+fn interactions_should_be_unique() {
+	new_test_ext().execute_with(|| {
+		assert_ok!(Popi::interact(RuntimeOrigin::signed(1), 2, 1, 1));
+		assert_noop!(
+			Popi::interact(RuntimeOrigin::signed(1), 2, 1, 1),
+			Error::<Test>::InteractionExisting
+		);
+	});
+}
+
+#[test]
 fn create_user_experiences() {
 	new_test_ext().execute_with(|| {
 		let account_id = 42;
