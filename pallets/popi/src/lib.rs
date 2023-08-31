@@ -176,6 +176,18 @@ pub mod pallet {
 		// 	let _now = <timestamp::Pallet<T>>::get();
 		// 	Ok(())
 		// }
+		#[pallet::call_index(2)]
+		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
+		pub fn interact(
+			origin: OriginFor<T>,
+			worker: T::AccountId,
+			board_id: u32,
+			task_id: u32,
+		) -> DispatchResult {
+			let approver = ensure_signed(origin)?;
+			let upi = UniqueProjectIdentifier::<T> { approver, worker, board_id, task_id };
+			return Self::store_interaction(upi)
+		}
 
 		/// An example dispatchable that may throw a custom error.
 		#[pallet::call_index(1)]
@@ -202,19 +214,11 @@ pub mod pallet {
 	/// For any function that needs to be accessible by the user, use the above implementation
 	/// (under #[pallet::call] attribute)
 	impl<T: Config> Pallet<T> {
-		pub fn interact(
-			origin: OriginFor<T>,
-			worker: T::AccountId,
-			board_id: u32,
-			task_id: u32,
-		) -> DispatchResult {
-			let approver = ensure_signed(origin)?;
-			let interaction = UniqueProjectIdentifier::<T> { approver, worker, board_id, task_id };
-			if Interaction::<T>::contains_key(&interaction) {
+		pub fn store_interaction(upi: UniqueProjectIdentifier<T>) -> DispatchResult {
+			if Interaction::<T>::contains_key(&upi) {
 				return Err(Error::<T>::InteractionExisting.into())
 			}
-			Interaction::<T>::insert(&interaction, ());
-			//after interaction I create an experience.
+			Interaction::<T>::insert(&upi, ());
 			Ok(())
 		}
 		/// Creates a new user experience, based on experience type and user id
