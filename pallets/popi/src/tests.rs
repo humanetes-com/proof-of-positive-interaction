@@ -24,3 +24,11 @@ fn correct_error_for_none_value() {
 		assert_noop!(PopiModule::cause_error(RuntimeOrigin::signed(1)), Error::<Test>::NoneValue);
 	});
 }
+// Building test checks that the task is created
+#[test]
+fn create_task() {
+	new_test_ext().execute_with(|| {
+		// Ensure the expected error is thrown when no value is present.
+		assert_ok!(PopiModule::create_task(RuntimeOrigin::signed(1), "task1", 1));
+	});
+}

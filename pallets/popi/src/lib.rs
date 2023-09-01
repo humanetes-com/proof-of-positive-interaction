@@ -33,8 +33,12 @@ pub mod pallet {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// Type representing the weight of this pallet
 		type WeightInfo: WeightInfo;
+		// Max length of a task
+		type MaxTaskLength: Get<u32>;
 
 	}
+
+
 
 	// The pallet's runtime storage items.
 	// https://docs.substrate.io/main-docs/build/runtime-storage/
@@ -88,12 +92,12 @@ pub mod pallet {
 		pub priority_level: u8,
 	}
 	
-	// This stuct repesents the amount of exp a task will have
+	// 
 	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug, Clone,)]
 	#[scale_info(skip_type_params(T))]
-	pub struct TaskExp<T: Config>{
+	pub struct Task<T: Config>{
 		pub creator_id: T::AccountId, // Account Id for the creator of the Task
-		// pub task: String, 
+		pub task_url: BoundedVec<u8, T::MaxTaskLength>, // URL of Task Ticket
 		pub priority_level: u8,
 	}
 
@@ -142,20 +146,24 @@ pub mod pallet {
 		}
 	}
 
-		
+	// Task is a ticket that is created by a user		
 	impl<T: Config> Pallet<T> {
 	
-		pub fn create_task(user: T::AccountId, task_value: TaskValue) -> DispatchResult {
+		pub fn create_task(origin: OriginFor<T>
+			, task: TaskDiscript, priority: Priority_level) -> DispatchResult {
 
+			// Check that the extrinsic was signed and get the signer.
+			let user = ensure_signed(origin)?;
 			// Create a new task
 			let new_task = TaskExp::<T> {
 				creator_id: user.clone(),
-				// task: "".to_string(),
+				task: b"".to_string().try_into().unwrap(),
 				priority_level: 0,
+			
 			};
 
 			// Store the new task
-			TaskStorage::<T>::set((user, &task_value), Some(new_task));
+			TaskStorage::<T>::set((user, &task, &priority), Some(new_task));
 			Ok(())
 		}
 	}
