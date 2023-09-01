@@ -27,23 +27,32 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	///
-	/// For additional information on BaseExperience, LevelDifficulty, and DifficultyMultiplier, check `fn calculate_exp_to_next_level`.
+	/// For additional information on BaseExperience, LevelDifficulty, and DifficultyMultiplier,
+	/// check `fn calculate_exp_to_next_level`.
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// Type representing the weight of this pallet
 		type WeightInfo: WeightInfo;
+
 		#[pallet::constant]
 		/// This is the amount of experience that a user needs to level up the first time
-		/// In addition, this will impact the amount of experience required to level up in the future
+		/// In addition, this will impact the amount of experience required to level up in the
+		/// future
 		type BaseExperience: Get<u128>;
+
 		#[pallet::constant]
 		/// Represents the overall difficulty of leveling up
 		type LevelDifficulty: Get<u32>;
+
 		#[pallet::constant]
 		/// The multiplier for the amount of experience required to level up
 		type DifficultyMultiplier: Get<u32>;
+
+		// #[pallet::constant]
+		// /// Maximum number of historical positive interactions per account
+		// type MaxPositiveUserInteractions: Get<u32>;
 
 		/*
 		level 1: 100
@@ -62,6 +71,14 @@ pub mod pallet {
 	// Learn more about declaring storage items:
 	// https://docs.substrate.io/main-docs/build/runtime-storage/#declaring-storage-items
 	pub type Something<T> = StorageValue<_, u32>;
+
+	/// A positive interaction consists on a task state transition
+	/// determined by a source AccountId on the work done by another dest accountId
+	///
+	/// TWOX-NOTE: Safe, as increasing integer keys are safe.
+	//#[pallet::getter(fn positive_interaction_getter)]
+	#[pallet::storage]
+	pub type Interaction<T: Config> = StorageMap<_, Twox64Concat, InteractionIdentifier<T>, ()>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn storage_getter)]
@@ -99,8 +116,12 @@ pub mod pallet {
 		/// Desired value does not exist in ExdperienceStorage
 		UserExperienceDoesNotExist,
 		/// User already has experience
-		/// This error is thrown when a user tries to create a new experience when they already have one
+		/// This error is thrown when a user tries to create a new experience when they already
+		/// have one
 		UserAlreadyHasExperience,
+		/// an interaction is identified univoquely by (approver, worker, project_id, task_id,
+		/// src_state, dst_state)
+		InteractionExisting,
 	}
 
 	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug, Clone, Copy)]
@@ -111,6 +132,23 @@ pub mod pallet {
 		Backend,
 		Marketing,
 		GraphicDesign,
+	}
+
+	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug, Clone, Copy)]
+	#[scale_info(skip_type_params(T))]
+	/// Id that refer univoquely to an interaction between an approver and the owner
+	/// of the increment, corresponding to a specific task of a specific board.
+	/// Increment is referred to the portion of work executed in this task.
+	pub struct InteractionIdentifier<T: Config> {
+		/// a person with the right expertise to validate the increment proposed
+		approver: T::AccountId,
+		/// author of the increment
+		worker: T::AccountId,
+		/// we need to implement this storage, for now it is an abstract number
+		/// this will be the specific board or project
+		board_id: u32,
+		/// id that identify the task inside of that board
+		task_id: u32,
 	}
 
 	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug)]
@@ -138,21 +176,23 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		/// An example dispatchable that takes a singles value as a parameter, writes the value to
 		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
-		#[pallet::call_index(0)]
-		#[pallet::weight(T::WeightInfo::do_something())]
-		pub fn do_something(origin: OriginFor<T>, something: u32) -> DispatchResult {
-			// Check that the extrinsic was signed and get the signer.
-			// This function will return an error if the extrinsic is not signed.
-			// https://docs.substrate.io/main-docs/build/origins/
-			let who = ensure_signed(origin)?;
-
-			// Update storage.
-			<Something<T>>::put(something);
-
-			// Emit an event.
-			Self::deposit_event(Event::SomethingStored { something, who });
-			// Return a successful DispatchResultWithPostInfo
-			Ok(())
+		// #[pallet::weight(0)]
+		// pub fn get_time(origin: OriginFor<T>) -> DispatchResult {
+		// 	let _sender = ensure_signed(origin)?;
+		// 	let _now = <timestamp::Pallet<T>>::get();
+		// 	Ok(())
+		// }
+		#[pallet::call_index(2)]
+		#[pallet::weight(10_000 + T::DbWeight::get().writes(1).ref_time())]
+		pub fn interact(
+			origin: OriginFor<T>,
+			worker: T::AccountId,
+			board_id: u32,
+			task_id: u32,
+		) -> DispatchResult {
+			let approver = ensure_signed(origin)?;
+			let upi = InteractionIdentifier::<T> { approver, worker, board_id, task_id };
+			return Self::store_interaction(upi)
 		}
 
 		/// An example dispatchable that may throw a custom error.
@@ -177,15 +217,26 @@ pub mod pallet {
 	}
 
 	/// The following impl and functions should not be accessible by the user
-	/// For any function that needs to be accessible by the user, use the above implementation (under #[pallet::call] attribute)
+	/// For any function that needs to be accessible by the user, use the above implementation
+	/// (under #[pallet::call] attribute)
 	impl<T: Config> Pallet<T> {
+		pub fn store_interaction(upi: InteractionIdentifier<T>) -> DispatchResult {
+			if Interaction::<T>::contains_key(&upi) {
+				return Err(Error::<T>::InteractionExisting.into())
+			}
+			Interaction::<T>::insert(&upi, ());
+			Ok(())
+		}
 		/// Creates a new user experience, based on experience type and user id
 		/// Returns an error if the user already has experience
 		// May add "ensure_signed(origin)?" later on
-		pub fn create_user_experience(user: T::AccountId, exp_type: ExperienceType) -> DispatchResult {
+		pub fn create_user_experience(
+			user: T::AccountId,
+			exp_type: ExperienceType,
+		) -> DispatchResult {
 			// Check if the user already has experience
 			if ExperienceStorage::<T>::contains_key((&user, &exp_type)) {
-				return Err(Error::<T>::UserAlreadyHasExperience.into());
+				return Err(Error::<T>::UserAlreadyHasExperience.into())
 			}
 
 			// Create a new user experience
@@ -201,9 +252,14 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Takes in a user id and returns the user's experience if it exists, otherwise returns an error
-		pub fn get_user_experience(user: T::AccountId, exp_type: ExperienceType) -> Result<UserExperience<T>, Error<T>> {
-			ExperienceStorage::<T>::get((user, &exp_type)).ok_or(Error::<T>::UserExperienceDoesNotExist)
+		/// Takes in a user id and returns the user's experience if it exists, otherwise returns an
+		/// error
+		pub fn get_user_experience(
+			user: T::AccountId,
+			exp_type: ExperienceType,
+		) -> Result<UserExperience<T>, Error<T>> {
+			ExperienceStorage::<T>::get((user, &exp_type))
+				.ok_or(Error::<T>::UserExperienceDoesNotExist)
 		}
 
 		fn update_user_experience(
