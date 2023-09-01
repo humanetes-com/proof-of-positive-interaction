@@ -72,13 +72,13 @@ pub mod pallet {
 	// https://docs.substrate.io/main-docs/build/runtime-storage/#declaring-storage-items
 	pub type Something<T> = StorageValue<_, u32>;
 
-	/// A positive interaction consists on a progration of the state of a task
+	/// A positive interaction consists on a task state transition
 	/// determined by a source AccountId on the work done by another dest accountId
 	///
 	/// TWOX-NOTE: Safe, as increasing integer keys are safe.
 	//#[pallet::getter(fn positive_interaction_getter)]
 	#[pallet::storage]
-	pub type Interaction<T: Config> = StorageMap<_, Twox64Concat, UniqueProjectIdentifier<T>, ()>;
+	pub type Interaction<T: Config> = StorageMap<_, Twox64Concat, InteractionIdentifier<T>, ()>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn storage_getter)]
@@ -136,10 +136,18 @@ pub mod pallet {
 
 	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug, Clone, Copy)]
 	#[scale_info(skip_type_params(T))]
-	pub struct UniqueProjectIdentifier<T: Config> {
+	/// Id that refer univoquely to an interaction between an approver and the owner
+	/// of the increment, corresponding to a specific task of a specific board.
+	/// Increment is referred to the portion of work executed in this task.
+	pub struct InteractionIdentifier<T: Config> {
+		/// a person with the right expertise to validate the increment proposed
 		approver: T::AccountId,
+		/// author of the increment
 		worker: T::AccountId,
+		/// we need to implement this storage, for now it is an abstract number
+		/// this will be the specific board or project
 		board_id: u32,
+		/// id that identify the task inside of that board
 		task_id: u32,
 	}
 
@@ -183,7 +191,7 @@ pub mod pallet {
 			task_id: u32,
 		) -> DispatchResult {
 			let approver = ensure_signed(origin)?;
-			let upi = UniqueProjectIdentifier::<T> { approver, worker, board_id, task_id };
+			let upi = InteractionIdentifier::<T> { approver, worker, board_id, task_id };
 			return Self::store_interaction(upi)
 		}
 
@@ -212,7 +220,7 @@ pub mod pallet {
 	/// For any function that needs to be accessible by the user, use the above implementation
 	/// (under #[pallet::call] attribute)
 	impl<T: Config> Pallet<T> {
-		pub fn store_interaction(upi: UniqueProjectIdentifier<T>) -> DispatchResult {
+		pub fn store_interaction(upi: InteractionIdentifier<T>) -> DispatchResult {
 			if Interaction::<T>::contains_key(&upi) {
 				return Err(Error::<T>::InteractionExisting.into())
 			}
