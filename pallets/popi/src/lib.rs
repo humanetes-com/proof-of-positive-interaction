@@ -16,8 +16,6 @@ mod benchmarking;
 pub mod weights;
 pub use weights::*;
 
-use pallet_timestamp::{self as timestamp};
-
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
