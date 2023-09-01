@@ -56,6 +56,8 @@ impl pallet_popi::Config for Test {
 	type DifficultyMultiplier = ConstU32<2>;
 	type MaxBuildingStateNameLength = ConstU32<10>;
 	type MaxRolesAllowance = ConstU8<5>;
+	type MaxBuildingStates = ConstU8<10>;
+	type MaxBuildingStateLevel = ConstU8<8>;
 }
 
 // Build genesis storage according to the mock runtime.

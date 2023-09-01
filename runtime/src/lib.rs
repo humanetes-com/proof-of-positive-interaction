@@ -276,6 +276,8 @@ impl pallet_popi::Config for Runtime {
 	type DifficultyMultiplier = ConstU32<2>;
 	type MaxBuildingStateNameLength = ConstU32<10>;
 	type MaxRolesAllowance = ConstU8<5>;
+	type MaxBuildingStates = ConstU8<10>;
+	type MaxBuildingStateLevel = ConstU8<8>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.

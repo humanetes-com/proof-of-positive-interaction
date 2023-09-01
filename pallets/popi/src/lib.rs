@@ -55,6 +55,9 @@ pub mod pallet {
 		/// maximum number of roles allowed to transition a specific state
 		type MaxRolesAllowance: Get<u8>;
 
+		type MaxBuildingStates: Get<u8>;
+
+		type MaxBuildingStateLevel: Get<u8>;
 		// key of a building state definition
 		// #[pallet::constant]
 		// /// Maximum number of historical positive interactions per account
@@ -151,7 +154,7 @@ pub mod pallet {
 	pub struct BuildingState<T: Config> {
 		/// key. currently we're autoincrementing it, is there in frame some unique id random
 		/// generation? is it needed?
-		id: u8,
+		id: T::MaxBuildingStates,
 		/// A state could be build, review, qa
 		name: BoundedVec<u8, <T as Config>::MaxBuildingStateNameLength>,
 		///0==non ready to be pulled, 1=ready to be pulled, 2=pulled, so in progress
@@ -160,7 +163,7 @@ pub mod pallet {
 		///those values are encoded to scale, and the minimum is a byte.
 		///I find it more optimized a byte than an enum where every option I think will
 		///be encoded to a byte
-		level: u8,
+		level: T::MaxBuildingStateLevel,
 		///experiences needed to work on this specific task, a requirement engineer
 		///perhaps a project manager, po, could fill these values during the definition
 		///of the board, or when setting the task as ready to be worked
