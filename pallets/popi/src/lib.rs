@@ -151,7 +151,7 @@ pub mod pallet {
 		task_id: u32,
 	}
 
-	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug)]
+	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Clone, Debug)]
 	#[scale_info(skip_type_params(T))]
 	/// This struct represents the a user's experience
 	/// Due to the types of experience that a user can have
@@ -264,9 +264,17 @@ pub mod pallet {
 
 		fn update_user_experience(
 			user: T::AccountId,
+			exp_type: ExperienceType,
 			experience: UserExperience<T>,
 		) -> DispatchResult {
-			unimplemented!()
+			// check if the user has experience
+			if !ExperienceStorage::<T>::contains_key((&user, &exp_type)) {
+				return Err(Error::<T>::UserExperienceDoesNotExist.into())
+			}
+
+			// otherwise, update the user's experience
+			ExperienceStorage::<T>::set((user, &exp_type), Some(experience));
+			Ok(())
 		}
 
 		/// Usees our Config types to calculate the amount of experience required to level up
