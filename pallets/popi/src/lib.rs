@@ -159,7 +159,7 @@ pub mod pallet {
 		/// The user's account id
 		/// This allows for querying of user's with specific experience thresholds
 		pub account_id: T::AccountId,
-		/// The user's experience
+		/// The user's experience in the specific experience type
 		pub experience: u128,
 		/// The user's experience level
 		/// This is calculated from the user's experience
@@ -262,7 +262,7 @@ pub mod pallet {
 				.ok_or(Error::<T>::UserExperienceDoesNotExist)
 		}
 
-		fn update_user_experience(
+		pub fn update_user_experience(
 			user: T::AccountId,
 			exp_type: ExperienceType,
 			experience: UserExperience<T>,
