@@ -20,6 +20,7 @@ pub use weights::*;
 pub mod pallet {
 	use super::*;
 	use frame_support::pallet_prelude::{DispatchResult, *};
+	use frame_support::sp_runtime::ArithmeticError;
 	use frame_system::pallet_prelude::*;
 
 	#[pallet::pallet]
@@ -192,7 +193,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let approver = ensure_signed(origin)?;
 			let upi = InteractionIdentifier::<T> { approver, worker, board_id, task_id };
-			return Self::store_interaction(upi)
+			return Self::store_interaction(upi);
 		}
 
 		/// An example dispatchable that may throw a custom error.
@@ -222,7 +223,7 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		pub fn store_interaction(upi: InteractionIdentifier<T>) -> DispatchResult {
 			if Interaction::<T>::contains_key(&upi) {
-				return Err(Error::<T>::InteractionExisting.into())
+				return Err(Error::<T>::InteractionExisting.into());
 			}
 			Interaction::<T>::insert(&upi, ());
 			Ok(())
@@ -236,7 +237,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			// Check if the user already has experience
 			if ExperienceStorage::<T>::contains_key((&user, &exp_type)) {
-				return Err(Error::<T>::UserAlreadyHasExperience.into())
+				return Err(Error::<T>::UserAlreadyHasExperience.into());
 			}
 
 			// Create a new user experience
@@ -269,7 +270,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			// check if the user has experience
 			if !ExperienceStorage::<T>::contains_key((&user, &exp_type)) {
-				return Err(Error::<T>::UserExperienceDoesNotExist.into())
+				return Err(Error::<T>::UserExperienceDoesNotExist.into());
 			}
 
 			// otherwise, update the user's experience
@@ -277,17 +278,24 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Usees our Config types to calculate the amount of experience required to level up
+		/// Uses our Config types to calculate the amount of experience required to level up
 		/// BaseExperience * DifficultyMultiplier ^ (LevelDifficulty * (level - 1))
 		fn calculate_exp_to_next_level(
-			experience: UserExperience<T>,
+			// Current experience of the user.
+			experience: u128,
+			// Current level of the user.
 			level: u32,
-		) -> DispatchResult {
-			let diff = level.checked_sub(1).ok_or(Error::<T>::UserExperienceDoesNotExist)?;
-			let power = T::LevelDifficulty::get().checked_mul(diff);
-			// let power = T::LevelDifficulty::get().checked_mul(1);
-
-			unimplemented!()
+		) -> Result<u128, DispatchError> {
+			let diff = level.checked_sub(1).ok_or(ArithmeticError::Underflow)?;
+			let power =
+				T::LevelDifficulty::get().checked_mul(diff).ok_or(ArithmeticError::Overflow)?;
+			let base = experience
+				.checked_mul(T::DifficultyMultiplier::get() as u128)
+				.ok_or(ArithmeticError::Overflow)?;
+			let result = base
+				.checked_pow(power)
+				.ok_or(ArithmeticError::Overflow)?;
+			Ok(result)
 		}
 	}
 }
