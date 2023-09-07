@@ -52,7 +52,6 @@ impl pallet_popi::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 	type BaseExperience = ConstU128<100>;
-	type LevelDifficulty = ConstU32<10>;
 	type DifficultyMultiplier = ConstU32<2>;
 }
 

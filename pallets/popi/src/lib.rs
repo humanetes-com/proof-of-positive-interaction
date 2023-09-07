@@ -44,10 +44,6 @@ pub mod pallet {
 		type BaseExperience: Get<u128>;
 
 		#[pallet::constant]
-		/// Represents the overall difficulty of leveling up
-		type LevelDifficulty: Get<u32>;
-
-		#[pallet::constant]
 		/// The multiplier for the amount of experience required to level up
 		type DifficultyMultiplier: Get<u32>;
 
@@ -57,11 +53,11 @@ pub mod pallet {
 
 		/*
 		level 1: 100
-		level 2: 200
-		level 3: 400
-		level 4: 800
-		level 5: 1600
-		BaseExperience * DifficultyMultiplier ^ (LevelDifficulty * (level - 1))
+		level 2: 400
+		level 3: 900
+		level 4: 1600
+		level 5: 2500
+		BaseExperience * (next_level ^ DifficultyMultiplier)
 		 */
 	}
 
@@ -286,16 +282,13 @@ pub mod pallet {
 			// Current level of the user.
 			level: u32,
 		) -> Result<u128, DispatchError> {
-			let diff = level.checked_sub(1).ok_or(ArithmeticError::Underflow)?;
-			let power =
-				T::LevelDifficulty::get().checked_mul(diff).ok_or(ArithmeticError::Overflow)?;
-			let base = experience
-				.checked_mul(T::DifficultyMultiplier::get() as u128)
-				.ok_or(ArithmeticError::Overflow)?;
-			let result = base
-				.checked_pow(power)
-				.ok_or(ArithmeticError::Overflow)?;
-			Ok(result)
+			let next_level = (level + 1) as u128;
+			let experience = T::BaseExperience::get()
+				.checked_mul(next_level.checked_pow(T::DifficultyMultiplier::get()).ok_or(
+					ArithmeticError::Overflow,
+				)?);
+
+			unimplemented!()
 		}
 	}
 }
