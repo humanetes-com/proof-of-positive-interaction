@@ -278,10 +278,15 @@ pub mod pallet {
 		}
 
 		/// Usees our Config types to calculate the amount of experience required to level up
+		/// BaseExperience * DifficultyMultiplier ^ (LevelDifficulty * (level - 1))
 		fn calculate_exp_to_next_level(
 			experience: UserExperience<T>,
 			level: u32,
 		) -> DispatchResult {
+			let diff = level.checked_sub(1).ok_or(Error::<T>::UserExperienceDoesNotExist)?;
+			let power = T::LevelDifficulty::get().checked_mul(diff);
+			// let power = T::LevelDifficulty::get().checked_mul(1);
+
 			unimplemented!()
 		}
 	}
