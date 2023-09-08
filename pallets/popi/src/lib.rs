@@ -276,17 +276,38 @@ pub mod pallet {
 
 		/// Uses our Config types to calculate the amount of experience required to level up
 		/// BaseExperience * DifficultyMultiplier ^ (LevelDifficulty * (level - 1))
-		fn calculate_exp_to_next_level(
+		fn calculate_exp_level(
 			// Current experience of the user.
 			experience: u128,
 			// Current level of the user.
 			level: u32,
-		) -> Result<u128, DispatchError> {
-			let next_level = (level + 1) as u128;
-			let experience = T::BaseExperience::get()
-				.checked_mul(next_level.checked_pow(T::DifficultyMultiplier::get()).ok_or(
-					ArithmeticError::Overflow,
-				)?);
+		) -> Result<u32, DispatchError> {
+			let mut new_level = level;
+
+			loop {
+				let next_level = (level + 1) as u128;
+				let exp_total = T::BaseExperience::get()
+					.checked_mul(
+						next_level
+							.checked_pow(T::DifficultyMultiplier::get())
+							.ok_or(ArithmeticError::Overflow)?,
+					)
+					.ok_or(ArithmeticError::Overflow)?;
+
+				// cover all cases
+				if experience == exp_total {
+					// can't level again if experience == exp_total
+					new_level += 1;
+					return Ok(new_level);
+				} else if experience < exp_total {
+					// if experience < exp_total, then we have found the level
+					return Ok(new_level);
+				} else {
+					// if experience > exp_total, then we need to keep going
+					
+					
+				}
+			}
 
 			unimplemented!()
 		}
