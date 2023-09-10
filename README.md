@@ -18,12 +18,13 @@ Lets make a concrete example:
 
  We have tasks, task can be of 3 different kinds:
  1. UI = design the UI of a functionality
- 2. FRONTEND DEVELOP = i.e. coding in React.js
- 3. SERVER DEVELOP = i.e. implementing an API service consumed by the frontend
+ 2. FRONTEND DEV = i.e. coding in React.js
+ 3. SERVER DEV = i.e. implementing an API service consumed by the frontend
  4. BI = someone who analyses the user journey
- 5. QA = Someone who validates something built
- 6. PO = creator of tasks.
- 7. PM = project manager
+ 5. QA  = Someone who validates something built and creates a Bug Ticket
+ 6. PO/Product Manager = creator of tasks.
+ 7. PM/Scrum Master = Manages the Flow of Scrum / Kanban
+  
 
  Every task must follow all the steps from NEW to DONE. The progress can never be done by the
  same person who worked on this specific task in this specific column.
@@ -34,24 +35,25 @@ Lets make a concrete example:
  PO moves this to TODO.
 
  A developer PULLS this task, means: moves this task from TODO into IN PROGRESS>
- Once she is done, set the task into "COMPLETED the current step". So small detail:
+ Once He/She is done, set the task into "COMPLETED the current step". So small detail:
  yes, someone else must move the task, but the person in this step must say "MY WORK IS READY TO
  BE PULLED" So the board is simplified but actually it has the double of steps:
+
  NEW| READY TO BE PULLED TO TODO | TODO| READY FOR INPROGRESS | INPROGRESS | READY FOR REVIEW |
  REVIEW |
 
  three cases connected to the previous example:
  1. UI creates the task, this task must be well described, contain the color code corresponding
-    to
- Yellow. When she thinks the task is ready to be pulled by A PO, set the task as "READY TO BE
- PULLED"
+    to Yellow. When she thinks the task is ready to be pulled by A PO, set the task as "READY TO BE PULLED"
 
  2. When a frontend developer takes a task from TODO to INPROGRESS. works on it, once she thinks
-    everything is
- completed and perhaps created a code review, sets this task as ready to be pulled
+    everything is completed and perhaps created a code review, sets this task as ready to be pulled
 
- 3. another developer will see the task as ready to be pulled and move it to Code review,
- and so on.
+ 3. another developer will see the task as ready to be pulled and move it to Code review, and so on.
+
+ 4. A QA will verify the task after Code Review is complete
+
+ 5. The PO will make sure to Validate the Business logic
 
  This Pallet is about the experience a person earns for working on something, by aggregating your experiences we're able to introduce an anonymous way of identifying yourself.
  
@@ -73,12 +75,13 @@ For example: A pull request may be approved only by an engineer, only tested by 
  are given by different roles, we want to have a good granurality level keeping track of all
  those aspects in a multidimensional matrix:
 
-  person given stamps by role | role1 | role 2 | role 3 | role 4
+  person given stamps by role | role1 | role 2 | role 3 | role 4 | role 5
  worked on kind of task:
  kind 1
  kind 2
  kind 3
  kind 4
+ kind 5
 
  so for example, think on someone who is a bit QA, a bit developer.
 
@@ -91,27 +94,24 @@ For example: A pull request may be approved only by an engineer, only tested by 
  task. Alice  work on task 2, pulling a task from CODE REVIEW DONE to QA, once done set QA to "QA
  DONE"
 
- Many roles are involved in this process:
- a. Task 1 pulled from TODO, was set as ready by a PO. Once Alice pulls it, is creating a proof
- of positive interaction to the PO. Actually thinking on it, the proof is given just once Alice
- finalize her task, and set it as READY to be pulled. cause the task creatd by the PO could have
- low quality, not contain all the info needed and Alice never being able to finalize it. The next
- role will make this point clearer: b. she sets the task as READY to be reviewed, cretes a code
- review.A developer pulls it by movindg the task to CODE REVIEW, and the task could be low
- quality, or not meet the espectations of the task. Only when the task will have an approved code
- review, so the actual code review approval, will register a proof of positive interaction to
- ALICE. c. once the code review is set as READY to be pulled, a QA will pull this task, work on
- it, once the QA is ready, will set as QA done. Again, setting a positive proof of interaction
- with the developer. d. a QA ready task, could be pulled perhaps by a PO(Product owner) or even
- by a developer and moved to "READY TO BE RELEASED" e. when the task is deployed by a release
- engineer or a developer, or a devops, this will increase the ranking of the PO.
 
- I hope now it is clear when I say that a person doesn't decides her role. Her role is an aggregate of positive proof of interactions with other experts. Of course initially
- in the project there will be no experts. Perhaps a ROOT could define initial roles, but I like
- more the idea of initially every person has 0 as experience, and is allowed to approve
- everything. We could define a formula that takes the norm of the experience on each role and
- sets this as a minimum for approving a task. In this way the experience needed to approve will
- be variable and grow with the overall experience of the community.
+THE WORKFLOW: 
+
+STEP 1: The process begins when the selection of a task, which is pulled from the `TO DO` list. A PRODUCT OWNER(PO) plays a pivotal role in this phase by marking the task as `READY to PULL`
+
+STEP 2: Once the task is ready i.e., `READY to PULL` Alice takes ownership of it. Her initial responsibility is to create a "Prood of Positive Interaction" with the Product Owner(PO). Notably this proof materializes when Alice completes the task and designates it as `READY` for others to work on. This step is crucial because tasks initally initiated by the PO might lack quality or essential information. 
+
+STEP 3: Alice (Developer) sets the task as `READY for REVIEW` and initiates a Code Review. At this point the Developer might pick up this task. However there is a possibility that the task still doesn't meet expectations or has quality issues
+
+STEP 4: The Proof of Positive Interaction is generated for ALICE when the task receives an approved `CODE REVIEW`. This approval signifies that the task aligns with the required standards, reflecting the collaborative nature of the process. And the reviewer marks the task as `READY for QA`
+
+STEP 5: A QA Professional pulls the task marked as `READY for QA`. They meticulously work on it and upon completion mark it as `QA DONE`. This action not only signifies the task's readyness for the next stage but also represents another Proof of Positive Interaction, this time between the QA specialist and the Developer.
+
+STEP 6: The `QA DONE` task can now be picked up by the Product Owner(PO)/Developer and is validated to be put into `READY for RELEASE`. This again initiates a Proof of Positive interaction between the QA and the PO or the Dev. 
+
+STEP 7: Finally the Task is deployed by a Release Engineer, Developer or someone from the DevOps team, this enhances the ranking of the PO. This steps illustrates the final outcome of the collaborative effort, with the PO benefiting from the successful completion and deployment of the task to Production and mark as `DONE` / `DEPLOYED to PRODUCTION`
+
+ It's important to acknowledge that in our project, individual roles aren't solely a matter of personal choice but evolve through positive interactions. Initially, when the project begins, there may not be established experts. While one option is assigning roles at the outset, I favor a more inclusive approach. At the project's start, each team member commences with zero experience, yet they hold full task approval authority. We can develop a method that factors in the average role-specific experience, setting it as a minimum for task approvals. This way, the approval threshold grows alongside our team's expertise, fostering a supportive and collaborative environment. 
 
  Root(which could be for a specific project the PO), defines for a project two sets of values:
  1. kind of work(or in the board example, kind of tasks, for example a coding task,
