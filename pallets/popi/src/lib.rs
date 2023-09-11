@@ -163,7 +163,7 @@ pub mod pallet {
 		pub level: u32,
 		/// Experience required to reach the next level
 		/// This is calculated from the user's experience
-		pub experience_to_next_level: u128,
+		pub exp_to_next_lvl: u128,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -241,7 +241,7 @@ pub mod pallet {
 				account_id: user.clone(),
 				experience: 0,
 				level: 0,
-				experience_to_next_level: T::BaseExperience::get(),
+				exp_to_next_lvl: T::BaseExperience::get(),
 			};
 
 			// Store the new user experience
@@ -262,13 +262,15 @@ pub mod pallet {
 		pub fn update_user_experience(
 			user: T::AccountId,
 			exp_type: ExperienceType,
-			experience: UserExperience<T>,
+			mut experience: UserExperience<T>,
 		) -> DispatchResult {
 			// check if the user has experience
 			if !ExperienceStorage::<T>::contains_key((&user, &exp_type)) {
 				return Err(Error::<T>::UserExperienceDoesNotExist.into());
 			}
 
+			experience.level = Self::calculate_exp_level(experience.experience, experience.level)?;
+			
 			// otherwise, update the user's experience
 			ExperienceStorage::<T>::set((user, &exp_type), Some(experience));
 			Ok(())
@@ -276,23 +278,24 @@ pub mod pallet {
 
 		/// Uses our Config types to calculate the amount of experience required to level up
 		/// BaseExperience * DifficultyMultiplier ^ (LevelDifficulty * (level - 1))
-		fn calculate_exp_level(
+		pub fn calculate_exp_level(
 			// Current experience of the user.
 			experience: u128,
 			// Current level of the user.
 			level: u32,
 		) -> Result<u32, DispatchError> {
 			let mut new_level = level;
+			let mut count: usize = 0;
 
 			loop {
-				let next_level = (level + 1) as u128;
-				let exp_total = T::BaseExperience::get()
-					.checked_mul(
-						next_level
-							.checked_pow(T::DifficultyMultiplier::get())
-							.ok_or(ArithmeticError::Overflow)?,
-					)
-					.ok_or(ArithmeticError::Overflow)?;
+				// This will prevent an infinite loop
+				// If the user has leveled up more than `count` times at once, then something is wrong
+				if count > 10 {
+					return Err(Error::<T>::StorageOverflow.into());
+				}
+
+				let next_level = new_level + 1;
+				let exp_total = Self::calc_exp_of_level(next_level)?;
 
 				// cover all cases
 				if experience == exp_total {
@@ -304,12 +307,29 @@ pub mod pallet {
 					return Ok(new_level);
 				} else {
 					// if experience > exp_total, then we need to keep going
-					
-					
+					new_level += 1;
+					count += 1;
 				}
 			}
+		}
 
-			unimplemented!()
+		/// The level argument is the current level of the user.
+		/// It's only purpose is to reduce computation by allowing us to start at the next level.
+		/// The alternative would be to iterate through all levels, which would be more expensive.
+		fn calc_exp_of_level(level: u32) -> Result<u128, DispatchError> {
+			let exp_total = T::BaseExperience::get()
+				.checked_mul(
+					(level as u128)
+						.checked_pow(T::DifficultyMultiplier::get())
+						.ok_or(ArithmeticError::Overflow)?,
+				)
+				.ok_or(ArithmeticError::Overflow)?;
+			Ok(exp_total)
+		}
+
+		fn remaining_exp(prev_exp: u128, next_exp: u128) -> Result<u128, DispatchError> {
+			let result = next_exp.checked_sub(prev_exp).ok_or(ArithmeticError::Underflow)?;
+			Ok(result)
 		}
 	}
 }
