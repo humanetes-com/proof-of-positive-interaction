@@ -112,6 +112,6 @@ fn level_up_three_times_at_once() {
 		println!("new_exp: {:?}", new_exp);
 		assert_eq!(new_exp.experience, 1400);
 		assert_eq!(new_exp.level, 3);
-		// assert_eq!(new_exp.exp_to_next_lvl, 200);
+		assert_eq!(new_exp.exp_to_next_lvl, 200);
 	});
 }

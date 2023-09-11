@@ -270,7 +270,9 @@ pub mod pallet {
 			}
 
 			experience.level = Self::calculate_exp_level(experience.experience, experience.level)?;
-			
+			let next_exp = Self::calc_exp_of_level(experience.level + 1)?;
+			experience.exp_to_next_lvl = Self::remaining_exp(experience.experience, next_exp)?;
+
 			// otherwise, update the user's experience
 			ExperienceStorage::<T>::set((user, &exp_type), Some(experience));
 			Ok(())
