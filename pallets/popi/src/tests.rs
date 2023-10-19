@@ -4,20 +4,12 @@ use frame_support::{assert_noop, assert_ok};
 fn i_know_how_to_work_with_vectors() {}
 
 #[test]
-fn correct_error_for_none_value() {
-	new_test_ext().execute_with(|| {
-		// Ensure the expected error is thrown when no value is present.
-		assert_noop!(Popi::cause_error(RuntimeOrigin::signed(1)), Error::<Test>::NoneValue);
-	});
-}
-
-#[test]
 fn interactions_should_be_unique() {
 	new_test_ext().execute_with(|| {
-		assert_ok!(Popi::interact(RuntimeOrigin::signed(1), 2, 1, 1));
+		assert_ok!(Popi::interact(RuntimeOrigin::signed(1), 2, 1, 1, 1, 2, 3));
 		assert_noop!(
-			Popi::interact(RuntimeOrigin::signed(1), 2, 1, 1),
-			Error::<Test>::InteractionExisting
+			Popi::interact(RuntimeOrigin::signed(1), 2, 1, 1, 1, 2, 3),
+			Error::<Test>::InteractionAlreadyExisting
 		);
 	});
 }

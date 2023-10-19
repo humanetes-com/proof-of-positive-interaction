@@ -50,6 +50,15 @@ pub mod pallet {
 		/// The multiplier for the amount of experience required to level up
 		type DifficultyMultiplier: Get<u32>;
 
+		/// maximum number of chars used to identify a state
+		type MaxBuildingStateNameLength: Get<u32>;
+		/// maximum number of roles allowed to transition a specific state
+		type MaxRolesAllowance: Get<u8>;
+
+		type MaxBuildingStates: Get<u8>;
+
+		type MaxBuildingStateLevel: Get<u8>;
+		// key of a building state definition
 		// #[pallet::constant]
 		// /// Maximum number of historical positive interactions per account
 		// type MaxPositiveUserInteractions: Get<u32>;
@@ -63,14 +72,6 @@ pub mod pallet {
 		BaseExperience * DifficultyMultiplier ^ (LevelDifficulty * (level - 1))
 		 */
 	}
-
-	// The pallet's runtime storage items.
-	// https://docs.substrate.io/main-docs/build/runtime-storage/
-	#[pallet::storage]
-	#[pallet::getter(fn something)]
-	// Learn more about declaring storage items:
-	// https://docs.substrate.io/main-docs/build/runtime-storage/#declaring-storage-items
-	pub type Something<T> = StorageValue<_, u32>;
 
 	/// A positive interaction consists on a task state transition
 	/// determined by a source AccountId on the work done by another dest accountId
@@ -99,7 +100,6 @@ pub mod pallet {
 	// Pallets use events to inform users when important changes are made.
 	// https://docs.substrate.io/main-docs/build/events-errors/
 	#[pallet::event]
-	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
@@ -121,7 +121,7 @@ pub mod pallet {
 		UserAlreadyHasExperience,
 		/// an interaction is identified univoquely by (approver, worker, project_id, task_id,
 		/// src_state, dst_state)
-		InteractionExisting,
+		InteractionAlreadyExisting,
 	}
 
 	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug, Clone, Copy)]
@@ -134,7 +134,48 @@ pub mod pallet {
 		GraphicDesign,
 	}
 
-	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug, Clone, Copy)]
+	/// Product lifecycle states
+	/// |STATE NAME
+	///	| STATE LEVEL (predefined states 0=NON_READY, 1=TO BE PULLED, 2=IN PROGRESS, 03=APPROVED,
+	/// 04=NON APPROVED,                state_level=5..255 remaining free for custom cases)
+	/// | ROLES
+	/// Please note: if a ticket must be done by server and client for example,
+	/// there should be a ticket only for client, and a ticket only for server
+	/// Example of states to populate on a typical software development board:
+	///	todo = build(ready) which means ready to be built
+	/// in progress = build(inprogress)
+	/// ready to review = build(step completed)
+	/// or build(ste_failed)
+	/// review=review(in progress)
+	/// for more example states and a better explanation you may visit:
+	/// https://miro.com/app/board/uXjVMqnQG9M=/?moveToWidget=3458764562536777565&cot=14
+	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Clone)]
+	#[scale_info(skip_type_params(T))]
+	pub struct BuildingState<T: Config> {
+		/// key. currently we're autoincrementing it, is there in frame some unique id random
+		/// generation? is it needed?
+		id: T::MaxBuildingStates,
+		/// A state could be build, review, qa
+		name: BoundedVec<u8, <T as Config>::MaxBuildingStateNameLength>,
+		///0==non ready to be pulled, 1=ready to be pulled, 2=pulled, so in progress
+		///3=work done, validation requested 4=validated and approved 5=non approved
+		///remaining free levels could be used for custom states. I'm using u8 because
+		///those values are encoded to scale, and the minimum is a byte.
+		///I find it more optimized a byte than an enum where every option I think will
+		///be encoded to a byte
+		level: T::MaxBuildingStateLevel,
+		///experiences needed to work on this specific task, a requirement engineer
+		///perhaps a project manager, po, could fill these values during the definition
+		///of the board, or when setting the task as ready to be worked
+		work_roles_allowance: BoundedVec<ExperienceType, <T as Config>::MaxRolesAllowance>,
+		///most of the times the validator contains the same experience as the worker
+		///for example: a developer cretes a pull request, the validator should be a developer
+		///but in some cases like in qa: sometimes it is a po, or even a dev who does qa
+		validate_roles_allowance: BoundedVec<ExperienceType, <T as Config>::MaxRolesAllowance>,
+	}
+
+	/// https://miro.com/app/board/uXjVMqnQG9M=/?moveToWidget=3458764562536777565&cot=14
+	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo)]
 	#[scale_info(skip_type_params(T))]
 	/// Id that refer univoquely to an interaction between an approver and the owner
 	/// of the increment, corresponding to a specific task of a specific board.
@@ -149,6 +190,12 @@ pub mod pallet {
 		board_id: u32,
 		/// id that identify the task inside of that board
 		task_id: u32,
+		/// organization that owns the board id and task id
+		org_id: u32,
+		/// a transition takes place from an initial state
+		initial_state_id: u8,
+		/// to a final state
+		final_state_id: u8,
 	}
 
 	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug)]
@@ -189,40 +236,34 @@ pub mod pallet {
 			worker: T::AccountId,
 			board_id: u32,
 			task_id: u32,
+			org_id: u32,
+			initial_state_id: u8,
+			final_state_id: u8,
 		) -> DispatchResult {
 			let approver = ensure_signed(origin)?;
-			let upi = InteractionIdentifier::<T> { approver, worker, board_id, task_id };
+			let upi = InteractionIdentifier::<T> {
+				approver,
+				worker,
+				board_id,
+				task_id,
+				org_id,
+				initial_state_id,
+				final_state_id,
+			};
 			return Self::store_interaction(upi)
-		}
-
-		/// An example dispatchable that may throw a custom error.
-		#[pallet::call_index(1)]
-		#[pallet::weight(T::WeightInfo::cause_error())]
-		pub fn cause_error(origin: OriginFor<T>) -> DispatchResult {
-			let _who = ensure_signed(origin)?;
-
-			// Read a value from storage.
-			match <Something<T>>::get() {
-				// Return an error if the value has not been set.
-				None => return Err(Error::<T>::NoneValue.into()),
-				Some(old) => {
-					// Increment the value read from storage; will error in the event of overflow.
-					let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
-					// Update the value in storage with the incremented result.
-					<Something<T>>::put(new);
-					Ok(())
-				},
-			}
 		}
 	}
 
+	/// ------------------------------------------------------------------------------------
+	/// Perhaps we could move the implementations and functions to another file
+	/// ------------------------------------------------------------------------------------
 	/// The following impl and functions should not be accessible by the user
 	/// For any function that needs to be accessible by the user, use the above implementation
 	/// (under #[pallet::call] attribute)
 	impl<T: Config> Pallet<T> {
 		pub fn store_interaction(upi: InteractionIdentifier<T>) -> DispatchResult {
 			if Interaction::<T>::contains_key(&upi) {
-				return Err(Error::<T>::InteractionExisting.into())
+				return Err(Error::<T>::InteractionAlreadyExisting.into())
 			}
 			Interaction::<T>::insert(&upi, ());
 			Ok(())

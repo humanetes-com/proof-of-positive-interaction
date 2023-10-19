@@ -1,6 +1,6 @@
 use crate as pallet_popi;
 use frame_support::traits::{ConstU16, ConstU64};
-use sp_core::{H256, ConstU128, ConstU32};
+use sp_core::{ConstU128, ConstU32, ConstU8, H256};
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
@@ -54,6 +54,10 @@ impl pallet_popi::Config for Test {
 	type BaseExperience = ConstU128<100>;
 	type LevelDifficulty = ConstU32<10>;
 	type DifficultyMultiplier = ConstU32<2>;
+	type MaxBuildingStateNameLength = ConstU32<10>;
+	type MaxRolesAllowance = ConstU8<5>;
+	type MaxBuildingStates = ConstU8<10>;
+	type MaxBuildingStateLevel = ConstU8<8>;
 }
 
 // Build genesis storage according to the mock runtime.
