@@ -62,8 +62,12 @@ pub mod pallet {
 		level 5: 1600
 		BaseExperience * DifficultyMultiplier ^ (LevelDifficulty * (level - 1))
 		 */
-	}
 
+		#[pallet::constant]
+		// The hash of the task that is being requested
+		type Task: Get<>;
+	 }
+ 
 	// The pallet's runtime storage items.
 	// https://docs.substrate.io/main-docs/build/runtime-storage/
 	#[pallet::storage]
@@ -123,6 +127,8 @@ pub mod pallet {
 		/// src_state, dst_state)
 		InteractionExisting,
 	}
+
+	
 
 	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug, Clone, Copy)]
 	/// This enum represents the different types of experience that a user can have
