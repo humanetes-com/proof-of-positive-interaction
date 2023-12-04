@@ -271,9 +271,8 @@ impl pallet_sudo::Config for Runtime {
 impl pallet_popi::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = pallet_popi::weights::SubstrateWeight<Runtime>;
-	type BaseExperience = ConstU128<100>;
+	type BaseExperience = ConstU128<500>;
 	type DifficultyMultiplier = ConstU32<2>;
-	type LevelLimit = ConstU8<1>;
 	type MaximumLevel = ConstU8<10>;
 }
 

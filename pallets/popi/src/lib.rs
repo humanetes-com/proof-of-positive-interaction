@@ -47,13 +47,9 @@ pub mod pallet {
 		/// The multiplier for the amount of experience required to level up
 		type DifficultyMultiplier: Get<u32>;
 
-		/// The number of levels that can be gained in a single interaction
-		#[pallet::constant]
-		type LevelLimit: Get<u8>;
-
 		/// The maximum level that a user can reach
 		#[pallet::constant]
-		type MaxLevel: Get<u8>;
+		type MaximumLevel: Get<u8>;
 
 		// #[pallet::constant]
 		// /// Maximum number of historical positive interactions per account
@@ -272,16 +268,24 @@ pub mod pallet {
 			exp_type: ExperienceType,
 			mut experience: UserExperience<T>,
 		) -> DispatchResult {
-			// check if the user has experience
+			// Check if the user has experience
 			if !ExperienceStorage::<T>::contains_key((&user, &exp_type)) {
 				return Err(Error::<T>::UserExperienceDoesNotExist.into());
 			}
 
 			experience.level = Self::calculate_exp_level(experience.experience, experience.level)?;
 			let next_exp = Self::calc_exp_of_level(experience.level + 1)?;
-			experience.exp_to_next_lvl = Self::remaining_exp(experience.experience, next_exp)?;
 
-			// otherwise, update the user's experience
+			// Verify that the user's experience is valid
+			if experience.level >= T::MaximumLevel::get() as u32 {
+				experience.level = T::MaximumLevel::get() as u32;
+				experience.exp_to_next_lvl = 0;
+			} else {
+				experience.exp_to_next_lvl = Self::remaining_exp(experience.experience, next_exp)?;
+			}
+
+			
+			// Update the user's experience
 			ExperienceStorage::<T>::set((user, &exp_type), Some(experience));
 			Ok(())
 		}
@@ -294,14 +298,16 @@ pub mod pallet {
 			// Current level of the user.
 			level: u32,
 		) -> Result<u32, DispatchError> {
+			
+			let max_level = T::MaximumLevel::get();
 			let mut new_level = level;
 			let mut count: usize = 0;
 
 			loop {
 				// This will prevent an infinite loop
-				// If the user has leveled up more than `count` times at once, then something is wrong
-				if count > 10 {
-					return Err(Error::<T>::StorageOverflow.into());
+				if count >= max_level as usize 
+					|| new_level >= max_level.into() {
+					return Ok(max_level.into());
 				}
 
 				let next_level = new_level + 1;

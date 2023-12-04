@@ -94,6 +94,8 @@ fn level_up_user_twice() {
 
 #[test]
 fn level_up_three_times_at_once() {
+	// This is not something that should happen in real life, but it's a good test
+	// to make sure that the level up logic works as expected
 	new_test_ext().execute_with(|| {
 		let account_id = 42;
 		let exp_type = ExperienceType::Marketing;
@@ -113,5 +115,35 @@ fn level_up_three_times_at_once() {
 		assert_eq!(new_exp.experience, 1400);
 		assert_eq!(new_exp.level, 3);
 		assert_eq!(new_exp.exp_to_next_lvl, 200);
+	});
+}
+
+#[test]
+fn capped_at_max_level() {
+	// Again, multiple level ups at once is not something that should happen in real life,
+	// however, we want to ensure that we cap the level at the maximum level
+	new_test_ext().execute_with(|| {
+		let account_id = 42;
+		let exp_type = ExperienceType::Marketing;
+
+		let _ = Popi::create_user_experience(account_id, exp_type.clone());
+		// Successfully get the user experience
+		assert_ok!(Popi::get_user_experience(account_id, exp_type));
+		
+		let mut user_exp = Popi::get_user_experience(account_id, exp_type).unwrap();
+		user_exp.experience = 100_000;
+
+		println!("user_exp: {:?}", user_exp);
+
+		let xp = Popi::calculate_exp_level(user_exp.experience, user_exp.level);
+		println!("xp: {:?}", xp);
+		// Successfully update the user experience
+		assert_ok!(Popi::update_user_experience(account_id, exp_type, user_exp));
+		// Successfully get the user experience
+		let new_exp = Popi::get_user_experience(account_id, exp_type).unwrap();
+		println!("new_exp: {:?}", new_exp);
+		assert_eq!(new_exp.experience, 100_000);
+		assert_eq!(new_exp.level, 10);
+		assert_eq!(new_exp.exp_to_next_lvl, 0);
 	});
 }
