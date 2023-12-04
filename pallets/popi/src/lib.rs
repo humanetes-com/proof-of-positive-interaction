@@ -47,6 +47,14 @@ pub mod pallet {
 		/// The multiplier for the amount of experience required to level up
 		type DifficultyMultiplier: Get<u32>;
 
+		/// The number of levels that can be gained in a single interaction
+		#[pallet::constant]
+		type LevelLimit: Get<u8>;
+
+		/// The maximum level that a user can reach
+		#[pallet::constant]
+		type MaxLevel: Get<u8>;
+
 		// #[pallet::constant]
 		// /// Maximum number of historical positive interactions per account
 		// type MaxPositiveUserInteractions: Get<u32>;

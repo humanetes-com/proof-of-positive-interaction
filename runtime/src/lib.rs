@@ -273,6 +273,8 @@ impl pallet_popi::Config for Runtime {
 	type WeightInfo = pallet_popi::weights::SubstrateWeight<Runtime>;
 	type BaseExperience = ConstU128<100>;
 	type DifficultyMultiplier = ConstU32<2>;
+	type LevelLimit = ConstU8<1>;
+	type MaximumLevel = ConstU8<10>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
