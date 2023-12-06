@@ -20,6 +20,7 @@ pub use weights::*;
 pub mod pallet {
 	use super::*;
 	use frame_support::pallet_prelude::{DispatchResult, *};
+	use frame_support::sp_runtime::ArithmeticError;
 	use frame_system::pallet_prelude::*;
 
 	#[pallet::pallet]
@@ -43,12 +44,12 @@ pub mod pallet {
 		type BaseExperience: Get<u128>;
 
 		#[pallet::constant]
-		/// Represents the overall difficulty of leveling up
-		type LevelDifficulty: Get<u32>;
-
-		#[pallet::constant]
 		/// The multiplier for the amount of experience required to level up
 		type DifficultyMultiplier: Get<u32>;
+
+		/// The maximum level that a user can reach
+		#[pallet::constant]
+		type MaximumLevel: Get<u8>;
 
 		// #[pallet::constant]
 		// /// Maximum number of historical positive interactions per account
@@ -56,11 +57,11 @@ pub mod pallet {
 
 		/*
 		level 1: 100
-		level 2: 200
-		level 3: 400
-		level 4: 800
-		level 5: 1600
-		BaseExperience * DifficultyMultiplier ^ (LevelDifficulty * (level - 1))
+		level 2: 400
+		level 3: 900
+		level 4: 1600
+		level 5: 2500
+		BaseExperience * (next_level ^ DifficultyMultiplier)
 		 */
 	}
 
@@ -151,7 +152,7 @@ pub mod pallet {
 		task_id: u32,
 	}
 
-	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Debug)]
+	#[derive(Encode, Decode, MaxEncodedLen, TypeInfo, Clone, Debug)]
 	#[scale_info(skip_type_params(T))]
 	/// This struct represents the a user's experience
 	/// Due to the types of experience that a user can have
@@ -159,14 +160,14 @@ pub mod pallet {
 		/// The user's account id
 		/// This allows for querying of user's with specific experience thresholds
 		pub account_id: T::AccountId,
-		/// The user's experience
+		/// The user's experience in the specific experience type
 		pub experience: u128,
 		/// The user's experience level
 		/// This is calculated from the user's experience
 		pub level: u32,
 		/// Experience required to reach the next level
 		/// This is calculated from the user's experience
-		pub experience_to_next_level: u128,
+		pub exp_to_next_lvl: u128,
 	}
 
 	// Dispatchable functions allows users to interact with the pallet and invoke state changes.
@@ -192,7 +193,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let approver = ensure_signed(origin)?;
 			let upi = InteractionIdentifier::<T> { approver, worker, board_id, task_id };
-			return Self::store_interaction(upi)
+			return Self::store_interaction(upi);
 		}
 
 		/// An example dispatchable that may throw a custom error.
@@ -222,7 +223,7 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		pub fn store_interaction(upi: InteractionIdentifier<T>) -> DispatchResult {
 			if Interaction::<T>::contains_key(&upi) {
-				return Err(Error::<T>::InteractionExisting.into())
+				return Err(Error::<T>::InteractionExisting.into());
 			}
 			Interaction::<T>::insert(&upi, ());
 			Ok(())
@@ -236,7 +237,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			// Check if the user already has experience
 			if ExperienceStorage::<T>::contains_key((&user, &exp_type)) {
-				return Err(Error::<T>::UserAlreadyHasExperience.into())
+				return Err(Error::<T>::UserAlreadyHasExperience.into());
 			}
 
 			// Create a new user experience
@@ -244,7 +245,7 @@ pub mod pallet {
 				account_id: user.clone(),
 				experience: 0,
 				level: 0,
-				experience_to_next_level: T::BaseExperience::get(),
+				exp_to_next_lvl: T::BaseExperience::get(),
 			};
 
 			// Store the new user experience
@@ -262,19 +263,89 @@ pub mod pallet {
 				.ok_or(Error::<T>::UserExperienceDoesNotExist)
 		}
 
-		fn update_user_experience(
+		pub fn update_user_experience(
 			user: T::AccountId,
-			experience: UserExperience<T>,
+			exp_type: ExperienceType,
+			mut experience: UserExperience<T>,
 		) -> DispatchResult {
-			unimplemented!()
+			// Check if the user has experience
+			if !ExperienceStorage::<T>::contains_key((&user, &exp_type)) {
+				return Err(Error::<T>::UserExperienceDoesNotExist.into());
+			}
+
+			experience.level = Self::calculate_exp_level(experience.experience, experience.level)?;
+			let next_exp = Self::calc_exp_of_level(experience.level + 1)?;
+
+			// Verify that the user's experience is valid
+			if experience.level >= T::MaximumLevel::get() as u32 {
+				experience.level = T::MaximumLevel::get() as u32;
+				experience.exp_to_next_lvl = 0;
+			} else {
+				experience.exp_to_next_lvl = Self::remaining_exp(experience.experience, next_exp)?;
+			}
+
+			
+			// Update the user's experience
+			ExperienceStorage::<T>::set((user, &exp_type), Some(experience));
+			Ok(())
 		}
 
-		/// Usees our Config types to calculate the amount of experience required to level up
-		fn calculate_exp_to_next_level(
-			experience: UserExperience<T>,
+		/// Uses our Config types to calculate the amount of experience required to level up
+		/// BaseExperience * DifficultyMultiplier ^ (LevelDifficulty * (level - 1))
+		pub fn calculate_exp_level(
+			// Current experience of the user.
+			experience: u128,
+			// Current level of the user.
 			level: u32,
-		) -> DispatchResult {
-			unimplemented!()
+		) -> Result<u32, DispatchError> {
+			
+			let max_level = T::MaximumLevel::get();
+			let mut new_level = level;
+			let mut count: usize = 0;
+
+			loop {
+				// This will prevent an infinite loop
+				if count >= max_level as usize 
+					|| new_level >= max_level.into() {
+					return Ok(max_level.into());
+				}
+
+				let next_level = new_level + 1;
+				let exp_total = Self::calc_exp_of_level(next_level)?;
+
+				// cover all cases
+				if experience == exp_total {
+					// can't level again if experience == exp_total
+					new_level += 1;
+					return Ok(new_level);
+				} else if experience < exp_total {
+					// if experience < exp_total, then we have found the level
+					return Ok(new_level);
+				} else {
+					// if experience > exp_total, then we need to keep going
+					new_level += 1;
+					count += 1;
+				}
+			}
+		}
+
+		/// The level argument is the current level of the user.
+		/// It's only purpose is to reduce computation by allowing us to start at the next level.
+		/// The alternative would be to iterate through all levels, which would be more expensive.
+		fn calc_exp_of_level(level: u32) -> Result<u128, DispatchError> {
+			let exp_total = T::BaseExperience::get()
+				.checked_mul(
+					(level as u128)
+						.checked_pow(T::DifficultyMultiplier::get())
+						.ok_or(ArithmeticError::Overflow)?,
+				)
+				.ok_or(ArithmeticError::Overflow)?;
+			Ok(exp_total)
+		}
+
+		fn remaining_exp(prev_exp: u128, next_exp: u128) -> Result<u128, DispatchError> {
+			let result = next_exp.checked_sub(prev_exp).ok_or(ArithmeticError::Underflow)?;
+			Ok(result)
 		}
 	}
 }
