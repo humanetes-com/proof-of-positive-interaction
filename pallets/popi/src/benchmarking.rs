@@ -3,7 +3,7 @@
 use super::*;
 
 #[allow(unused)]
-use crate::Pallet as popi;
+use crate::Pallet as Popi;
 use frame_benchmarking::v2::*;
 use frame_system::RawOrigin;
 
@@ -31,5 +31,5 @@ mod benchmarks {
 		assert_eq!(Something::<T>::get(), Some(101u32));
 	}
 
-	impl_benchmark_test_suite!(popi, crate::mock::new_test_ext(), crate::mock::Test);
+	impl_benchmark_test_suite!(Popi, crate::mock::new_test_ext(), crate::mock::Test);
 }
